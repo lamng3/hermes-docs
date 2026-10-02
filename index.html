@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview - nl2sparql</title>
+<meta name="description" content="Training-free natural language to SPARQL: a question and a Turtle ontology in, one query out.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">nl2sparql</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html" aria-current="page">Overview</a><a href="generate.html">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+</nav>
+<main id="content">
+<p class="kicker">nl2sparql</p>
+<h1>Overview</h1>
+<p class="lede">A question, a Turtle ontology, and optional context go in. One SPARQL query comes out. The model is a generator. Nothing here is trained on query pairs.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#the-pieces">The pieces</a></li><li><a href="#one-call">One call</a></li><li><a href="#install">Install</a></li></ol></nav>
+<p>The public entry is <code>generate</code>. It loads a compact vocabulary, asks a model for a draft, walks a fixed list of stages, and checks that the result parses. The stages are the place later techniques plug in. Today each of them returns the draft unchanged.</p>
+<h2 id="the-pieces">The pieces</h2>
+<div class="cards">
+<a class="card" href="generate.html"><strong>Generate</strong><span>The command, <code>generate</code>, and the prompt that lists prefixes, classes, and properties.</span></a>
+<a class="card" href="vocabulary.html"><strong>Vocabulary</strong><span>Classes, properties, and prefixes read from a Turtle file, capped for the prompt.</span></a>
+<a class="card" href="stages.html"><strong>Stages</strong><span>Guardrails, query guided, context guided, and chase and backchase. Hooks only, for now.</span></a>
+<a class="card" href="validate.html"><strong>Validation</strong><span>Extract the query, lift modifiers out of <code>WHERE</code>, parse, and repair once.</span></a>
+<a class="card" href="models.html"><strong>Models</strong><span>A local Ollama model by default, or an OpenAI-compatible API.</span></a>
+</div>
+<h2 id="one-call">One call</h2>
+<ol>
+<li><code>load_vocabulary</code> reads the Turtle file.</li>
+<li><code>build_prompt</code> lists prefixes, classes, properties, context, and examples.</li>
+<li><code>complete</code> asks the model for one query.</li>
+<li><code>prepare_draft</code> extracts the query and lifts solution modifiers.</li>
+<li><code>apply_stages</code> walks guardrails, query guided, context guided, then chase and backchase.</li>
+<li><code>parse_error</code> checks the query. On failure, one repair call runs, then the same stages and the same check.</li>
+</ol>
+<p>The return value is a dict with <code>sparql</code>, <code>model</code>, and <code>provider</code>.</p>
+<h2 id="install">Install</h2>
+<pre><code>git clone https://github.com/lamng3/nl2sparql.git
+cd nl2sparql
+pip install -e .</code></pre>
+<p>Python 3.11 or newer. Dependencies are <code>rdflib</code> and <code>httpx</code>. Tests use the <code>dev</code> extra: <code>pip install -e ".[dev]"</code>, then <code>pytest</code>.</p>
+
+</main>
+</div>
+<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+</body>
+</html>

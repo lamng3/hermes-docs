@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stages - nl2sparql</title>
+<meta name="description" content="The four research stages between the draft SPARQL query and parse checking.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">nl2sparql</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+</nav>
+<main id="content">
+<p class="kicker">nl2sparql.stages</p>
+<h1>Stages</h1>
+<p class="lede">apply_stages walks a fixed tuple. Each function takes the draft and returns a query. Replacing a function is how a later technique enters the pipeline.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#contract">Contract</a></li><li><a href="#guardrails">Guardrails</a></li><li><a href="#query-guided">Query guided</a></li><li><a href="#context-guided">Context guided</a></li><li><a href="#chase">Chase and backchase</a></li></ol></nav>
+<div class="callout next"><span class="label">Later</span><p>All four functions return the draft unchanged. The order and the call signature are the stable part. The bodies are the work still to do.</p></div>
+<h2 id="contract">Contract</h2>
+<pre><code>def stage(sparql, *, ontology, context):
+    return sparql
+
+STAGES = (guardrails, query_guided, context_guided, chase_backchase)</code></pre>
+<p><code>sparql</code> is the draft string after <a href="validate.html">extraction and modifier lifting</a>. <code>ontology</code> is the vocabulary dict from <code>load_vocabulary</code>, not the file path. <code>context</code> is the <code>Context</code> passed to <code>generate</code>.</p>
+<p><code>generate</code> calls <code>apply_stages</code> on the first draft, and again on the repair draft if the first query does not parse. A replacement should return a string. It should not assume it is the last step: validation still runs after the tuple.</p>
+<p>Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/stages.py">stages.py</a>.</p>
+<h2 id="guardrails">Guardrails <span class="tag">later</span></h2>
+<p>Reject or rewrite a query that leaves the ontology vocabulary. The intended check is the prefixes, classes, and properties already loaded for the prompt. The function does not inspect them yet.</p>
+<h2 id="query-guided">Query guided <span class="tag">later</span></h2>
+<p>Steer a draft using a target query shape or a previous SPARQL query. The prompt already shows one fixed shape. This stage is where a caller-supplied shape, or an earlier query, would revise the draft after generation.</p>
+<h2 id="context-guided">Context guided <span class="tag">later</span></h2>
+<p>Retrieve and place example questions, beyond stuffing them into the prompt. Examples today are only the JSONL rows the caller passed, copied verbatim into the prompt. This stage is where retrieval over a larger pool would choose and place them.</p>
+<h2 id="chase">Chase and backchase <span class="tag">later</span></h2>
+<p>Reformulate the query with ontology constraints, then minimize it. The function documents that intent and does not implement the algorithm. Constraints would come from the same Turtle file the vocabulary was loaded from. Minimization would drop triples the constraints make redundant.</p>
+
+</main>
+</div>
+<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+</body>
+</html>
