@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validation - nl2sparql</title>
+<meta name="description" content="How a model reply becomes one SPARQL string, and how a parse error is repaired once.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">nl2sparql</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html" aria-current="page">Validation</a><a href="models.html">Models</a>
+</nav>
+<main id="content">
+<p class="kicker">nl2sparql.validate</p>
+<h1>Validation</h1>
+<p class="lede">prepare_draft extracts a query and moves solution modifiers out of WHERE. parse_error checks it with RDFLib. One repair call is allowed.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#extract">Extract</a></li><li><a href="#lift">Lift modifiers</a></li><li><a href="#parse">Parse and repair</a></li></ol></nav>
+<h2 id="extract">Extract</h2>
+<p><code>extract_sparql</code> prefers the first fenced block, including a <code>sparql</code> fence. Without a fence, it uses the whole reply. It then keeps the first span that starts at <code>SELECT</code>, <code>ASK</code>, <code>CONSTRUCT</code>, or <code>DESCRIBE</code>, including any <code>PREFIX</code> lines immediately before it. If that span is missing, the whole text is returned. An empty result raises <code>ValueError</code> from <code>prepare_draft</code>.</p>
+<h2 id="lift">Lift modifiers</h2>
+<p>Models often write <code>ORDER BY</code>, <code>LIMIT</code>, <code>GROUP BY</code>, <code>HAVING</code>, or <code>OFFSET</code> inside the outer <code>WHERE</code> block. <code>lift_modifiers</code> moves those lines to after the block when they sit at brace depth zero inside it.</p>
+<pre><code>SELECT ?city WHERE {
+  ?s a ex:City .
+  ORDER BY ?city
+  LIMIT 5
+}</code></pre>
+<p>becomes a query with the triple inside <code>WHERE</code> and <code>ORDER BY ?city</code> then <code>LIMIT 5</code> after the closing brace. The same modifiers inside a nested <code>SELECT</code> stay where they are, because that depth is not zero. A query with no <code>WHERE</code>, or with unbalanced braces, is returned unchanged.</p>
+<h2 id="parse">Parse and repair</h2>
+<p><code>parse_error</code> calls <code>rdflib.plugins.sparql.prepareQuery</code>. It returns <code>None</code> when the query parses, and the exception text otherwise.</p>
+<p>On an error, <code>generate</code> sends <code>repair_prompt</code>: the parser message, the bad query, and instructions to return only the corrected query, keep <code>SELECT</code> out of <code>FILTER</code>, put <code>GROUP BY</code>, <code>ORDER BY</code>, and <code>LIMIT</code> after <code>WHERE</code>, and write aggregates as <code>(MAX(?value) AS ?maxValue)</code>. The repair reply goes through <code>prepare_draft</code> and <code>apply_stages</code> again. A second parse error raises <code>ValueError</code>. There is no third call.</p>
+<p>Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/validate.py">validate.py</a>.</p>
+
+</main>
+</div>
+<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+</body>
+</html>

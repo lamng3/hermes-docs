@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generate - nl2sparql</title>
+<meta name="description" content="The nl2sparql generate command, the Python function, and the prompt it builds.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">nl2sparql</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html" aria-current="page">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+</nav>
+<main id="content">
+<p class="kicker">nl2sparql.generate</p>
+<h1>Generate</h1>
+<p class="lede">generate writes one SPARQL query for a question and an ontology. The command prints that result as JSON.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#command">Command</a></li><li><a href="#python">From Python</a></li><li><a href="#prompt">Prompt</a></li><li><a href="#errors">Errors</a></li></ol></nav>
+<h2 id="command">Command</h2>
+<pre><code>nl2sparql generate \
+  --ontology GeoOutage.ttl \
+  --question "Which counties have the highest number of outages?" \
+  --context notes.txt \
+  --examples pairs.jsonl</code></pre>
+<table>
+<tr><th>Flag</th><th>Required</th><th>Meaning</th></tr>
+<tr><td><code>--ontology</code></td><td>yes</td><td>Turtle file.</td></tr>
+<tr><td><code>--question</code></td><td>yes</td><td>The competency question.</td></tr>
+<tr><td><code>--context</code></td><td>no</td><td>A text file. The whole file is extra context.</td></tr>
+<tr><td><code>--examples</code></td><td>no</td><td>JSONL. Each line is one object with <code>nl</code> and <code>sparql</code>. <code>nl_text</code> and <code>sparql_query</code> are accepted aliases.</td></tr>
+</table>
+<p>Blank lines in the JSONL file are skipped. Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/cli.py">cli.py</a>.</p>
+<h2 id="python">From Python</h2>
+<pre><code>from nl2sparql import Context, Example, generate
+
+result = generate(
+    "Which counties have the highest number of outages?",
+    "GeoOutage.ttl",
+    context=Context(
+        text="Counties are administrative regions.",
+        examples=[
+            Example(
+                nl="List outage records.",
+                sparql="SELECT ?rec WHERE { ?rec a geooutageonto:OutageRecord }",
+            )
+        ],
+    ),
+)
+print(result["sparql"])</code></pre>
+<p><code>context</code> is optional. Pass <code>None</code> or a <code>Context</code>. Anything else raises <code>TypeError</code>. A blank question raises <code>ValueError</code>.</p>
+<p><code>Context.text</code> defaults to an empty string. <code>Context.examples</code> defaults to an empty list. <code>Example</code> has two strings, <code>nl</code> and <code>sparql</code>.</p>
+<h2 id="prompt">Prompt</h2>
+<p><code>build_prompt</code> joins these sections with a blank line:</p>
+<ol>
+<li>Instructions: one query, only the prefixes and terms below, match labels in quotes, triples inside <code>WHERE</code>, <code>ORDER BY</code> and <code>LIMIT</code> after that block, no <code>SELECT</code> inside <code>FILTER</code>, do not copy the shape example terms, return only the query.</li>
+<li>A shape example that shows the clause order, using <code>ex:</code> terms that are not from the ontology.</li>
+<li>Declared prefixes as <code>PREFIX name: &lt;namespace&gt;</code>.</li>
+<li>Classes, one per line.</li>
+<li>Properties, one per line.</li>
+<li>Context text, when it is non-empty.</li>
+<li>Example question and query pairs, when any example has text.</li>
+<li>The question, always last.</li>
+</ol>
+<p>Empty class or property lists render as <code>(none found)</code>. No prefixes renders as <code>(none)</code>.</p>
+<h2 id="errors">Errors</h2>
+<p>If the model text has no query, <code>prepare_draft</code> raises <code>ValueError</code>. If the query still fails to parse after one repair call, <code>generate</code> raises <code>ValueError</code> with the parser message. Model failures are <code>LookupError</code>, described on the <a href="models.html">Models</a> page.</p>
+
+</main>
+</div>
+<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+</body>
+</html>
