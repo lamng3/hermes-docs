@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stages - nl2sparql</title>
+<title>Stages - Hermes</title>
 <meta name="description" content="The four research stages between the draft SPARQL query and parse checking.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
-  <a class="brand" href="index.html">nl2sparql</a>
+  <a class="brand" href="index.html">Hermes</a>
   <label class="nav-button" for="nav-toggle">Menu</label>
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
-<p class="kicker">nl2sparql.stages</p>
+<p class="kicker">hermes.stages</p>
 <h1>Stages</h1>
 <p class="lede">apply_stages walks a fixed tuple. Each function takes the draft and returns a query. Replacing a function is how a later technique enters the pipeline.</p>
 
@@ -32,7 +32,7 @@
 STAGES = (guardrails, query_guided, context_guided, chase_backchase)</code></pre>
 <p><code>sparql</code> is the draft string after <a href="validate.html">extraction and modifier lifting</a>. <code>ontology</code> is the vocabulary dict from <code>load_vocabulary</code>, not the file path. <code>context</code> is the <code>Context</code> passed to <code>generate</code>.</p>
 <p><code>generate</code> calls <code>apply_stages</code> on the first draft, and again on the repair draft if the first query does not parse. A replacement should return a string. It should not assume it is the last step: validation still runs after the tuple.</p>
-<p>Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/stages.py">stages.py</a>.</p>
+<p>Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/stages.py">stages.py</a>.</p>
 <h2 id="guardrails">Guardrails <span class="tag">later</span></h2>
 <p>Reject or rewrite a query that leaves the ontology vocabulary. The intended check is the prefixes, classes, and properties already loaded for the prompt. The function does not inspect them yet.</p>
 <h2 id="query-guided">Query guided <span class="tag">later</span></h2>
@@ -44,6 +44,6 @@ STAGES = (guardrails, query_guided, context_guided, chase_backchase)</code></pre
 
 </main>
 </div>
-<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
 </body>
 </html>

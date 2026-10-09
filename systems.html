@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Systems - Hermes</title>
+<meta name="description" content="The Hermes system registry: register a method by name and run it through one interface.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">Hermes</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html" aria-current="page">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+</nav>
+<main id="content">
+<p class="kicker">hermes.systems</p>
+<h1>Systems</h1>
+<p class="lede">A system is a callable that turns a question into SPARQL. Registering it by name lets callers swap methods without changing their code.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#contract">Contract</a></li><li><a href="#register">Register a system</a></li><li><a href="#run">Run one</a></li><li><a href="#shipped">Shipped systems</a></li></ol></nav>
+<h2 id="contract">Contract</h2>
+<pre><code>def system(question, ontology, context):
+    return {"sparql": "..."}</code></pre>
+<p><code>question</code> is a string. <code>ontology</code> is a path to a Turtle file. <code>context</code> is a <code>Context</code> or <code>None</code>. The return value is a dict with at least <code>sparql</code>. A system may add keys such as <code>model</code> and <code>provider</code>.</p>
+<p>Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/systems.py">systems.py</a>.</p>
+<h2 id="register">Register a system</h2>
+<pre><code>import hermes
+
+@hermes.systems.register("my-system")
+def my_system(question, ontology, context):
+    return {"sparql": "SELECT * WHERE { ?s ?p ?o } LIMIT 1"}</code></pre>
+<p>A name can be registered once. A second registration under the same name raises <code>ValueError</code>. <code>hermes.systems.available()</code> lists the names, sorted.</p>
+<h2 id="run">Run one</h2>
+<pre><code>hermes.ask("Which counties have the most outages?", "GeoOutage.ttl", system="my-system")</code></pre>
+<p>An unknown name raises <code>KeyError</code> that lists the available systems. From the shell, <code>hermes systems</code> prints the names and <code>hermes generate --system NAME</code> runs one.</p>
+<h2 id="shipped">Shipped systems</h2>
+<table>
+<tr><th>Name</th><th>What it does</th></tr>
+<tr><td><code>training-free</code></td><td>Prompts a model with the ontology vocabulary, then runs <a href="stages.html">stages</a> and <a href="validate.html">validation</a>. <a href="generate.html">Details</a>.</td></tr>
+</table>
+<p>More systems are expected here. Each one is added behind the same interface, so results can be compared system by system.</p>
+
+</main>
+</div>
+<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
+</body>
+</html>

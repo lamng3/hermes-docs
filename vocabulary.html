@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vocabulary - nl2sparql</title>
-<meta name="description" content="How nl2sparql turns a Turtle ontology into prefixes, classes, and properties for the prompt.">
+<title>Vocabulary - Hermes</title>
+<meta name="description" content="How hermes turns a Turtle ontology into prefixes, classes, and properties for the prompt.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
-  <a class="brand" href="index.html">nl2sparql</a>
+  <a class="brand" href="index.html">Hermes</a>
   <label class="nav-button" for="nav-toggle">Menu</label>
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html">Generate</a><a href="vocabulary.html" aria-current="page">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html" aria-current="page">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
-<p class="kicker">nl2sparql.ontology</p>
+<p class="kicker">hermes.ontology</p>
 <h1>Vocabulary</h1>
 <p class="lede">load_vocabulary reads a Turtle file and returns a small dict the prompt can list. It does not send the whole ontology.</p>
 
@@ -31,7 +31,7 @@
   "properties": ['ex:inCountry "in country"'],
   "prefixes": [("ex", "http://example.org/demo#")],
 }</code></pre>
-<p>The parser is RDFLib with <code>format="turtle"</code>. Other serializations are not accepted. Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/ontology.py">ontology.py</a>.</p>
+<p>The parser is RDFLib with <code>format="turtle"</code>. Other serializations are not accepted. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/ontology.py">ontology.py</a>.</p>
 <h2 id="terms">Classes and properties</h2>
 <p>Classes are IRIs typed <code>owl:Class</code> or <code>rdfs:Class</code>. Properties are IRIs typed <code>owl:ObjectProperty</code>, <code>owl:DatatypeProperty</code>, or <code>rdf:Property</code>. Blank nodes are dropped. Each term is kept once.</p>
 <p>An <code>rdfs:label</code> is appended in quotes when one exists. The list stops at 60 classes and 60 properties. Later terms are omitted, so a large ontology is only partly visible to the model until this cap moves.</p>
@@ -42,6 +42,6 @@
 
 </main>
 </div>
-<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
 </body>
 </html>
