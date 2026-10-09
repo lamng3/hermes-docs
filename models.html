@@ -3,49 +3,49 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Models - nl2sparql</title>
-<meta name="description" content="The Ollama client and the OpenAI-compatible client used by nl2sparql.">
+<title>Models - Hermes</title>
+<meta name="description" content="The Ollama client and the OpenAI-compatible client used by hermes.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
-  <a class="brand" href="index.html">nl2sparql</a>
+  <a class="brand" href="index.html">Hermes</a>
   <label class="nav-button" for="nav-toggle">Menu</label>
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html" aria-current="page">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html" aria-current="page">Models</a>
 </nav>
 <main id="content">
-<p class="kicker">nl2sparql.llm</p>
+<p class="kicker">hermes.llm</p>
 <h1>Models</h1>
 <p class="lede">complete returns the reply text, the model name, and the provider. The default provider is a local Ollama server.</p>
 
 <nav class="toc"><strong>On this page</strong><ol><li><a href="#choice">Which provider</a></li><li><a href="#ollama">Ollama</a></li><li><a href="#openai">OpenAI-compatible</a></li></ol></nav>
 <h2 id="choice">Which provider</h2>
-<p><code>ONTOCHECK_LLM_PROVIDER=openai</code> selects the HTTP client below. Any other value, including an empty one, selects Ollama. Temperature is 0 for both. The system message asks for one SPARQL query and nothing else.</p>
-<p>Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/llm.py">llm.py</a>.</p>
+<p><code>HERMES_LLM_PROVIDER=openai</code> selects the HTTP client below. Any other value, including an empty one, selects Ollama. Temperature is 0 for both. The system message asks for one SPARQL query and nothing else.</p>
+<p>Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/llm.py">llm.py</a>.</p>
 <h2 id="ollama">Ollama</h2>
 <table>
 <tr><th>Variable</th><th>Default</th></tr>
-<tr><td><code>ONTOCHECK_OLLAMA_BASE_URL</code></td><td><code>http://127.0.0.1:11434</code></td></tr>
-<tr><td><code>ONTOCHECK_OLLAMA_MODEL</code></td><td>chosen from installed models</td></tr>
+<tr><td><code>HERMES_OLLAMA_BASE_URL</code></td><td><code>http://127.0.0.1:11434</code></td></tr>
+<tr><td><code>HERMES_OLLAMA_MODEL</code></td><td>chosen from installed models</td></tr>
 </table>
 <p>With no model set, the client reads <code>/api/tags</code> and picks the first installed name that matches this order: <code>llama3.1</code>, <code>llama3</code>, <code>mistral</code>, <code>phi3</code>, <code>qwen2.5</code>, <code>qwen</code>. A name matches exactly or with a tag, as in <code>llama3.1:latest</code>. If none match, the first installed model is used. If none are installed, the error tells you to run <code>ollama pull llama3.1</code>.</p>
-<p>The chat call uses <code>/api/chat</code>, <code>stream</code> false, and <code>keep_alive</code> of 10 minutes. The timeout is 180 seconds. A connection failure says to start <code>ollama serve</code>. A timeout suggests a smaller <code>ONTOCHECK_OLLAMA_MODEL</code>. A 404 says to <code>ollama pull</code> that model.</p>
+<p>The chat call uses <code>/api/chat</code>, <code>stream</code> false, and <code>keep_alive</code> of 10 minutes. The timeout is 180 seconds. A connection failure says to start <code>ollama serve</code>. A timeout suggests a smaller <code>HERMES_OLLAMA_MODEL</code>. A 404 says to <code>ollama pull</code> that model.</p>
 <h2 id="openai">OpenAI-compatible</h2>
 <table>
 <tr><th>Variable</th><th>Default</th></tr>
-<tr><td><code>ONTOCHECK_LLM_API_KEY</code></td><td>required</td></tr>
-<tr><td><code>ONTOCHECK_LLM_BASE_URL</code></td><td><code>https://api.together.xyz/v1</code></td></tr>
-<tr><td><code>ONTOCHECK_LLM_MODEL</code></td><td><code>meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo</code></td></tr>
+<tr><td><code>HERMES_LLM_API_KEY</code></td><td>required</td></tr>
+<tr><td><code>HERMES_LLM_BASE_URL</code></td><td><code>https://api.together.xyz/v1</code></td></tr>
+<tr><td><code>HERMES_LLM_MODEL</code></td><td><code>meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo</code></td></tr>
 </table>
 <p>The client posts to <code>/chat/completions</code> with a bearer token. The timeout is 40 seconds. A missing API key raises <code>LookupError</code> and points back at Ollama.</p>
 
 </main>
 </div>
-<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
 </body>
 </html>

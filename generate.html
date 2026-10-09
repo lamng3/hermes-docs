@@ -3,29 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Generate - nl2sparql</title>
-<meta name="description" content="The nl2sparql generate command, the Python function, and the prompt it builds.">
+<title>Training-free - Hermes</title>
+<meta name="description" content="The training-free system: the generate command, the Python function, and the prompt it builds.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
-  <a class="brand" href="index.html">nl2sparql</a>
+  <a class="brand" href="index.html">Hermes</a>
   <label class="nav-button" for="nav-toggle">Menu</label>
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">nl2sparql</a><a href="index.html">Overview</a><a href="generate.html" aria-current="page">Generate</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html" aria-current="page">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
-<p class="kicker">nl2sparql.generate</p>
-<h1>Generate</h1>
-<p class="lede">generate writes one SPARQL query for a question and an ontology. The command prints that result as JSON.</p>
+<p class="kicker">hermes.generate</p>
+<h1>Training-free</h1>
+<p class="lede">The training-free system writes one SPARQL query for a question and an ontology. The command prints that result as JSON.</p>
 
 <nav class="toc"><strong>On this page</strong><ol><li><a href="#command">Command</a></li><li><a href="#python">From Python</a></li><li><a href="#prompt">Prompt</a></li><li><a href="#errors">Errors</a></li></ol></nav>
 <h2 id="command">Command</h2>
-<pre><code>nl2sparql generate \
+<pre><code>hermes generate \
   --ontology GeoOutage.ttl \
   --question "Which counties have the highest number of outages?" \
   --context notes.txt \
@@ -37,11 +37,12 @@
 <tr><td><code>--context</code></td><td>no</td><td>A text file. The whole file is extra context.</td></tr>
 <tr><td><code>--examples</code></td><td>no</td><td>JSONL. Each line is one object with <code>nl</code> and <code>sparql</code>. <code>nl_text</code> and <code>sparql_query</code> are accepted aliases.</td></tr>
 </table>
-<p>Blank lines in the JSONL file are skipped. Source: <a href="https://github.com/lamng3/nl2sparql/blob/master/src/nl2sparql/cli.py">cli.py</a>.</p>
+<p>Blank lines in the JSONL file are skipped. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/cli.py">cli.py</a>.</p>
+<p>Add <code>--system NAME</code> to run another registered system. The default is <code>training-free</code>.</p>
 <h2 id="python">From Python</h2>
-<pre><code>from nl2sparql import Context, Example, generate
+<pre><code>from hermes import Context, Example, ask
 
-result = generate(
+result = ask(
     "Which counties have the highest number of outages?",
     "GeoOutage.ttl",
     context=Context(
@@ -53,9 +54,10 @@ result = generate(
             )
         ],
     ),
+    system="training-free",
 )
 print(result["sparql"])</code></pre>
-<p><code>context</code> is optional. Pass <code>None</code> or a <code>Context</code>. Anything else raises <code>TypeError</code>. A blank question raises <code>ValueError</code>.</p>
+<p><code>hermes.generate</code> is the same system called directly. <code>context</code> is optional. Pass <code>None</code> or a <code>Context</code>. Anything else raises <code>TypeError</code>. A blank question raises <code>ValueError</code>.</p>
 <p><code>Context.text</code> defaults to an empty string. <code>Context.examples</code> defaults to an empty list. <code>Example</code> has two strings, <code>nl</code> and <code>sparql</code>.</p>
 <h2 id="prompt">Prompt</h2>
 <p><code>build_prompt</code> joins these sections with a blank line:</p>
@@ -75,6 +77,6 @@ print(result["sparql"])</code></pre>
 
 </main>
 </div>
-<footer class="site">nl2sparql. Training-free natural language to SPARQL. Code: <a href="https://github.com/lamng3/nl2sparql">github.com/lamng3/nl2sparql</a>.</footer>
+<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
 </body>
 </html>
