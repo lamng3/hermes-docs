@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experiments - Hermes</title>
+<meta name="description" content="Experiment configs, run outputs, provenance, the leaderboard, and the Text2SPARQL API.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <a class="brand" href="index.html">Hermes</a>
+  <label class="nav-button" for="nav-toggle">Menu</label>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav">
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html" aria-current="page">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+</nav>
+<main id="content">
+<p class="kicker">hermes.experiments, hermes.serve</p>
+<h1>Experiments</h1>
+<p class="lede">An experiment is a YAML config. A run predicts, executes, and scores every item, and keeps everything needed to reproduce or audit it.</p>
+
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#config">Config</a></li><li><a href="#run">A run</a></li><li><a href="#report">Leaderboard</a></li><li><a href="#serve">Challenge API</a></li><li><a href="#rules">Rules for comparable numbers</a></li></ol></nav>
+<h2 id="config">Config</h2>
+<pre><code>benchmark: ck26
+system: uniqgen
+params:            # constructor arguments of the system
+  beam_width: 5
+llm:
+  provider: ollama # or openai
+  model: llama3.1
+  cache: .cache/llm
+languages: [en]    # optional
+limit: 20          # optional
+examples:          # optional few-shot pool from another benchmark
+  benchmark: db25
+  limit: 10
+leak_gold: true    # ablations only: gold answers in context.answers</code></pre>
+<p>Configs live in <code>configs/&lt;benchmark&gt;/</code>. <code>bash experiments/run_all.sh</code> reruns them all.</p>
+<h2 id="run">A run</h2>
+<pre><code>hermes run configs/ck26/prover.yaml [--limit N] [--resume RUN_ID]</code></pre>
+<p>For each item, the system predicts a query, the query runs on the benchmark's store, and the answers are scored. Errors are recorded, not raised. A run writes <code>results/&lt;benchmark&gt;/&lt;config&gt;/&lt;run id&gt;/</code>:</p>
+<table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>config.yaml</code></td><td>the config as run</td></tr>
+<tr><td><code>predictions.jsonl</code></td><td>per item: SPARQL, error, seconds, official and strict scores, <code>gold_reproduces</code>, and system traces</td></tr>
+<tr><td><code>metrics.json</code></td><td><code>official</code>, <code>strict</code>, and <code>reproducible</code> averages, error count, latency p50 and p95</td></tr>
+<tr><td><code>run.json</code></td><td>model, model calls and cache hits, graph executions, contaminated examples, the commit the run started from and whether <code>src/</code> had local changes</td></tr>
+</table>
+<p>Observers receive start, item, and end events; <code>Progress</code> prints one line per item. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/experiments.py">experiments.py</a>.</p>
+<h2 id="report">Leaderboard</h2>
+<pre><code>hermes report [--benchmark ck26] [--write]</code></pre>
+<p>Prints the latest run of each config next to the official Text2SPARQL 2026 entries from <code>results/peers/</code>; <code>--write</code> saves <code>results/LEADERBOARD.md</code>.</p>
+<h2 id="serve">Challenge API</h2>
+<pre><code>hermes serve --config configs/ck26/prover.yaml --port 8000</code></pre>
+<p><code>GET /?question=...&amp;dataset=&lt;dataset id&gt;</code> returns <code>{"dataset", "question", "query"}</code>, the contract the official text2sparql-client calls, so any system can be submitted or scored with the organizers' tools. An unknown dataset is 404, a missing question 422. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/serve.py">serve.py</a>.</p>
+<h2 id="rules">Rules for comparable numbers</h2>
+<ul>
+<li>Set the official metrics on all items next to published entries, with strict and reproducible figures beside them.</li>
+<li>Never tune on the test benchmark; CK25 and CK26 share 49 of 50 queries.</li>
+<li>Keep benchmark content out of prompts and examples. A run with <code>leak_gold</code> or contaminated examples is an upper bound, not a result.</li>
+<li>Name the model. A local 8B model is a lower bound for a method, not its ceiling.</li>
+</ul>
+
+</main>
+</div>
+<footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
+</body>
+</html>

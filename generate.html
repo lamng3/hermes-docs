@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Training-free - Hermes</title>
-<meta name="description" content="The training-free system: the generate command, the Python function, and the prompt it builds.">
+<meta name="description" content="The training-free system: one prompted draft from the vocabulary, fixed stages, and one repair.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,12 +16,12 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html" aria-current="page">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html" aria-current="page">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
-<p class="kicker">hermes.generate</p>
+<p class="kicker">hermes.systems.training_free</p>
 <h1>Training-free</h1>
-<p class="lede">The training-free system writes one SPARQL query for a question and an ontology. The command prints that result as JSON.</p>
+<p class="lede">The training-free system writes one SPARQL query from the schema vocabulary in a single model call, plus one repair call if the draft does not parse.</p>
 
 <nav class="toc"><strong>On this page</strong><ol><li><a href="#command">Command</a></li><li><a href="#python">From Python</a></li><li><a href="#prompt">Prompt</a></li><li><a href="#errors">Errors</a></li></ol></nav>
 <h2 id="command">Command</h2>
@@ -31,52 +31,41 @@
   --context notes.txt \
   --examples pairs.jsonl</code></pre>
 <table>
-<tr><th>Flag</th><th>Required</th><th>Meaning</th></tr>
-<tr><td><code>--ontology</code></td><td>yes</td><td>Turtle file.</td></tr>
-<tr><td><code>--question</code></td><td>yes</td><td>The competency question.</td></tr>
-<tr><td><code>--context</code></td><td>no</td><td>A text file. The whole file is extra context.</td></tr>
-<tr><td><code>--examples</code></td><td>no</td><td>JSONL. Each line is one object with <code>nl</code> and <code>sparql</code>. <code>nl_text</code> and <code>sparql_query</code> are accepted aliases.</td></tr>
+<tr><th>Flag</th><th>Meaning</th></tr>
+<tr><td><code>--ontology</code>, <code>--graph</code>, or <code>--endpoint</code></td><td>One is required: an RDF file, a graph name from <code>data/graphs.yaml</code>, or a SPARQL endpoint URL.</td></tr>
+<tr><td><code>--question</code></td><td>Required.</td></tr>
+<tr><td><code>--context</code></td><td>A text file of extra context.</td></tr>
+<tr><td><code>--examples</code></td><td>JSONL, one object per line with <code>nl</code> and <code>sparql</code> (<code>nl_text</code> and <code>sparql_query</code> are accepted).</td></tr>
+<tr><td><code>--system</code></td><td>Any registered system; the default is <code>training-free</code>.</td></tr>
 </table>
-<p>Blank lines in the JSONL file are skipped. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/cli.py">cli.py</a>.</p>
-<p>Add <code>--system NAME</code> to run another registered system. The default is <code>training-free</code>.</p>
+<p>Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/cli.py">cli.py</a>.</p>
 <h2 id="python">From Python</h2>
-<pre><code>from hermes import Context, Example, ask
+<pre><code>from hermes import Context, Example, TrainingFree
 
-result = ask(
+system = TrainingFree()          # or TrainingFree(llm=...)
+result = system(
     "Which counties have the highest number of outages?",
     "GeoOutage.ttl",
-    context=Context(
-        text="Counties are administrative regions.",
-        examples=[
-            Example(
-                nl="List outage records.",
-                sparql="SELECT ?rec WHERE { ?rec a geooutageonto:OutageRecord }",
-            )
-        ],
-    ),
-    system="training-free",
+    Context(text="Counties are administrative regions.",
+            examples=[Example(nl="List outage records.",
+                              sparql="SELECT ?rec WHERE { ?rec a geooutageonto:OutageRecord }")]),
 )
 print(result["sparql"])</code></pre>
-<p><code>hermes.generate</code> is the same system called directly. <code>context</code> is optional. Pass <code>None</code> or a <code>Context</code>. Anything else raises <code>TypeError</code>. A blank question raises <code>ValueError</code>.</p>
-<p><code>Context.text</code> defaults to an empty string. <code>Context.examples</code> defaults to an empty list. <code>Example</code> has two strings, <code>nl</code> and <code>sparql</code>.</p>
+<p>The result has <code>sparql</code>, <code>model</code>, and <code>provider</code>. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/systems/training_free.py">training_free.py</a>.</p>
 <h2 id="prompt">Prompt</h2>
 <p><code>build_prompt</code> joins these sections with a blank line:</p>
 <ol>
-<li>Instructions: one query, only the prefixes and terms below, match labels in quotes, triples inside <code>WHERE</code>, <code>ORDER BY</code> and <code>LIMIT</code> after that block, no <code>SELECT</code> inside <code>FILTER</code>, do not copy the shape example terms, return only the query.</li>
-<li>A shape example that shows the clause order, using <code>ex:</code> terms that are not from the ontology.</li>
-<li>Declared prefixes as <code>PREFIX name: &lt;namespace&gt;</code>.</li>
-<li>Classes, one per line.</li>
-<li>Properties, one per line.</li>
-<li>Context text, when it is non-empty.</li>
-<li>Example question and query pairs, when any example has text.</li>
-<li>The question, always last.</li>
+<li>Instructions: one query, only the prefixes and terms below, match labels in quotes, triples inside <code>WHERE</code>, <code>ORDER BY</code> and <code>LIMIT</code> after it, no <code>SELECT</code> inside <code>FILTER</code>, do not copy the shape example, return only the query.</li>
+<li>A shape example with <code>ex:</code> terms that are not from the ontology.</li>
+<li>Prefixes, classes, and properties from the <a href="vocabulary.html">vocabulary</a>.</li>
+<li>Context text and example pairs, when given.</li>
+<li>The question, last.</li>
 </ol>
-<p>Empty class or property lists render as <code>(none found)</code>. No prefixes renders as <code>(none)</code>.</p>
 <h2 id="errors">Errors</h2>
-<p>If the model text has no query, <code>prepare_draft</code> raises <code>ValueError</code>. If the query still fails to parse after one repair call, <code>generate</code> raises <code>ValueError</code> with the parser message. Model failures are <code>LookupError</code>, described on the <a href="models.html">Models</a> page.</p>
+<p>A reply without a query raises <code>ValueError</code>. A query that still fails to parse after one repair raises <code>ValueError</code> with the parser message. Model failures are <code>LookupError</code>; see <a href="models.html">Models</a>.</p>
 
 </main>
 </div>
-<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
+<footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
 </body>
 </html>

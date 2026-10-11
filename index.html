@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Overview - Hermes</title>
-<meta name="description" content="Hermes carries a question across to the graph: a Python library for natural language to SPARQL with swappable systems.">
+<meta name="description" content="Hermes: verified query planning over the SPARQL algebra with language agents. Paper, code, benchmarks, and experiments.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,42 +16,55 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html" aria-current="page">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html" aria-current="page">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
 <p class="kicker">Hermes</p>
 <h1>Overview</h1>
-<p class="lede">Hermes is named for the Greek messenger and interpreter. A question, a Turtle ontology, and optional context go in. One SPARQL query comes out. Each approach is a system behind one interface, so systems can be swapped and compared.</p>
+<p class="lede">Hermes answers a question over a knowledge graph by planning a SPARQL query one algebra operator at a time. A verifier types every step against the RDF schema before it runs, and execution on the graph tells the planner what each step did.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#the-pieces">The pieces</a></li><li><a href="#one-call">One call</a></li><li><a href="#install">Install</a></li></ol></nav>
-<p>The public entry is <code>hermes.ask(question, ontology, system=...)</code>. A system is any callable registered by name, and <a href="systems.html">Systems</a> shows how to add one. The one that ships today is <code>training-free</code>. It loads a compact vocabulary, asks a model for a draft, walks a fixed list of stages, and checks that the result parses. The stages are the place later techniques plug in. Today each of them returns the draft unchanged.</p>
-<h2 id="the-pieces">The pieces</h2>
-<div class="cards">
-<a class="card" href="systems.html"><strong>Systems</strong><span>The registry, <code>ask</code>, and how to register a new system.</span></a>
-<a class="card" href="generate.html"><strong>Training-free</strong><span>The command, <code>generate</code>, and the prompt that lists prefixes, classes, and properties.</span></a>
-<a class="card" href="vocabulary.html"><strong>Vocabulary</strong><span>Classes, properties, and prefixes read from a Turtle file, capped for the prompt.</span></a>
-<a class="card" href="stages.html"><strong>Stages</strong><span>Guardrails, query guided, context guided, and chase and backchase. Hooks only, for now.</span></a>
-<a class="card" href="validate.html"><strong>Validation</strong><span>Extract the query, lift modifiers out of <code>WHERE</code>, parse, and repair once.</span></a>
-<a class="card" href="models.html"><strong>Models</strong><span>A local Ollama model by default, or an OpenAI-compatible API.</span></a>
-</div>
-<h2 id="one-call">One call</h2>
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#idea">The idea</a></li><li><a href="#pieces">The pieces</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#install">Install</a></li></ol></nav>
+<p>This site documents the code of the paper <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf"><em>Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents</em></a> (Lam Nguyen, Case Western Reserve University). The repository is its official implementation.</p>
+<h2 id="idea">The idea</h2>
+<p>Language models usually write a whole SPARQL query, then repair it after it fails. A query optimizer works differently: it applies one algebraic operator at a time and estimates its effect before keeping it. Hermes takes the optimizer's view of query generation:</p>
 <ol>
-<li><code>load_vocabulary</code> reads the Turtle file.</li>
-<li><code>build_prompt</code> lists prefixes, classes, properties, context, and examples.</li>
-<li><code>complete</code> asks the model for one query.</li>
-<li><code>prepare_draft</code> extracts the query and lifts solution modifiers.</li>
-<li><code>apply_stages</code> walks guardrails, query guided, context guided, then chase and backchase.</li>
-<li><code>parse_error</code> checks the query. On failure, one repair call runs, then the same stages and the same check.</li>
+<li><strong>A typed SPARQL algebra.</strong> A query plan is a term of the algebra. The RDF schema gives every variable a type, and rules decide without running the plan whether it is valid. See <a href="verifier.html">Verifier</a>.</li>
+<li><strong>Verified query planning.</strong> Actions are algebra operators. After each one the planner sees the number of solutions, how it changed, a sample of rows, and any error. A plan is accepted only when it is valid and meets a goal stated from the question. See <a href="algebra.html">Algebra</a>.</li>
+<li><strong>One interface for methods.</strong> One-shot generation, constraint-guided search (UniQGen), and the planners are swappable systems on the same graphs and the same scorer. See <a href="systems.html">Systems</a>.</li>
+<li><strong>A reproducible evaluation.</strong> Six benchmarks in one format, and a scorer that reproduces every published Text2SPARQL 2026 score. See <a href="benchmarks.html">Benchmarks</a> and <a href="evaluation.html">Evaluation</a>.</li>
 </ol>
-<p>The return value is a dict with <code>sparql</code>, <code>model</code>, and <code>provider</code>.</p>
+<h2 id="pieces">The pieces</h2>
+<div class="cards">
+<a class="card" href="algebra.html"><strong>Algebra</strong><span>Plans, actions, the explorer, and the feedback after every step.</span></a>
+<a class="card" href="verifier.html"><strong>Verifier</strong><span>Typing, well-formedness, goals, and the <code>prover</code> system.</span></a>
+<a class="card" href="systems.html"><strong>Systems</strong><span>The registry and the four shipped systems.</span></a>
+<a class="card" href="stores.html"><strong>Graph stores</strong><span>Oxigraph, rdflib, and SPARQL endpoints behind one <code>query</code> call.</span></a>
+<a class="card" href="benchmarks.html"><strong>Benchmarks</strong><span>Text2SPARQL and QALD in one normalized format, with caveats.</span></a>
+<a class="card" href="evaluation.html"><strong>Evaluation</strong><span>Official, strict, and reproducible-subset metrics.</span></a>
+<a class="card" href="experiments.html"><strong>Experiments</strong><span>Configs, runs, the leaderboard, and the challenge API.</span></a>
+<a class="card" href="models.html"><strong>Models</strong><span>Ollama or an OpenAI-compatible API, with retries and a replay cache.</span></a>
+</div>
+<h2 id="quick-start">Quick start</h2>
+<pre><code>hermes data fetch ck26                      # download and normalize a benchmark
+hermes run configs/ck26/algebra-agent.yaml  # predict, execute, score
+hermes report                               # leaderboard with official peer scores</code></pre>
+<p>One question at a time:</p>
+<pre><code>hermes generate --graph corporate --system prover \
+  --question "Who is Heinrich Hoch's manager?"</code></pre>
+<pre><code>from hermes import KnowledgeGraph, ask
+
+kg = KnowledgeGraph.from_files("onto.ttl", "data.ttl")
+result = ask("Which cities hosted the Winter Olympics?", kg, system="prover")
+print(result["sparql"])</code></pre>
 <h2 id="install">Install</h2>
 <pre><code>git clone https://github.com/lamng3/hermes.git
 cd hermes
-pip install -e .</code></pre>
-<p>The install name is <code>hermes-sparql</code> and the import name is <code>hermes</code>. Python 3.11 or newer. Dependencies are <code>rdflib</code> and <code>httpx</code>. Tests use the <code>dev</code> extra: <code>pip install -e ".[dev]"</code>, then <code>pytest</code>.</p>
+pip install -e ".[dev]"
+pytest</code></pre>
+<p>The install name is <code>hermes-sparql</code> and the import name is <code>hermes</code>. Python 3.11 or newer. Dependencies are <code>rdflib</code>, <code>pyoxigraph</code>, <code>httpx</code>, and <code>pyyaml</code>. The tests need no model and no network.</p>
 
 </main>
 </div>
-<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
+<footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
 </body>
 </html>
