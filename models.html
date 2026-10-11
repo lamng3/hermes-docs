@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Models - Hermes</title>
-<meta name="description" content="The Ollama client and the OpenAI-compatible client used by hermes.">
+<meta name="description" content="LLM clients in Hermes: Ollama, OpenAI-compatible APIs, retries, and a replay cache.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,36 +16,41 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html" aria-current="page">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html" aria-current="page">Models</a>
 </nav>
 <main id="content">
 <p class="kicker">hermes.llm</p>
 <h1>Models</h1>
-<p class="lede">complete returns the reply text, the model name, and the provider. The default provider is a local Ollama server.</p>
+<p class="lede">Systems receive an LLM client, so experiments choose the model. Completions can be cached on disk, so a rerun replays the same outputs.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#choice">Which provider</a></li><li><a href="#ollama">Ollama</a></li><li><a href="#openai">OpenAI-compatible</a></li></ol></nav>
-<h2 id="choice">Which provider</h2>
-<p><code>HERMES_LLM_PROVIDER=openai</code> selects the HTTP client below. Any other value, including an empty one, selects Ollama. Temperature is 0 for both. The system message asks for one SPARQL query and nothing else.</p>
-<p>Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/llm.py">llm.py</a>.</p>
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#clients">Clients</a></li><li><a href="#ollama">Ollama</a></li><li><a href="#openai">OpenAI-compatible</a></li><li><a href="#cache">Cache and retries</a></li></ol></nav>
+<h2 id="clients">Clients</h2>
+<pre><code>from hermes import llm
+
+client = llm.create(provider="ollama", model="llama3.1", cache=".cache/llm")
+text = client.complete(prompt, system="...")</code></pre>
+<p>Every client has <code>complete(prompt, system)</code>, <code>model</code>, and <code>provider</code>. <code>llm.create</code> builds one from a config's <code>llm</code> section; <code>llm.from_env()</code> builds the default from environment variables. Temperature is 0. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/llm.py">llm.py</a>.</p>
 <h2 id="ollama">Ollama</h2>
 <table>
 <tr><th>Variable</th><th>Default</th></tr>
 <tr><td><code>HERMES_OLLAMA_BASE_URL</code></td><td><code>http://127.0.0.1:11434</code></td></tr>
-<tr><td><code>HERMES_OLLAMA_MODEL</code></td><td>chosen from installed models</td></tr>
+<tr><td><code>HERMES_OLLAMA_MODEL</code></td><td>chosen from installed models: <code>llama3.1</code>, <code>llama3</code>, <code>mistral</code>, <code>phi3</code>, <code>qwen2.5</code>, <code>qwen</code>, then the first installed</td></tr>
 </table>
-<p>With no model set, the client reads <code>/api/tags</code> and picks the first installed name that matches this order: <code>llama3.1</code>, <code>llama3</code>, <code>mistral</code>, <code>phi3</code>, <code>qwen2.5</code>, <code>qwen</code>. A name matches exactly or with a tag, as in <code>llama3.1:latest</code>. If none match, the first installed model is used. If none are installed, the error tells you to run <code>ollama pull llama3.1</code>.</p>
-<p>The chat call uses <code>/api/chat</code>, <code>stream</code> false, and <code>keep_alive</code> of 10 minutes. The timeout is 180 seconds. A connection failure says to start <code>ollama serve</code>. A timeout suggests a smaller <code>HERMES_OLLAMA_MODEL</code>. A 404 says to <code>ollama pull</code> that model.</p>
+<p>The timeout is 180 seconds. Connection failures, timeouts, and missing models raise <code>LookupError</code> with the command to fix them.</p>
 <h2 id="openai">OpenAI-compatible</h2>
 <table>
 <tr><th>Variable</th><th>Default</th></tr>
+<tr><td><code>HERMES_LLM_PROVIDER</code></td><td>set to <code>openai</code> to select this client</td></tr>
 <tr><td><code>HERMES_LLM_API_KEY</code></td><td>required</td></tr>
 <tr><td><code>HERMES_LLM_BASE_URL</code></td><td><code>https://api.together.xyz/v1</code></td></tr>
 <tr><td><code>HERMES_LLM_MODEL</code></td><td><code>meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo</code></td></tr>
 </table>
-<p>The client posts to <code>/chat/completions</code> with a bearer token. The timeout is 40 seconds. A missing API key raises <code>LookupError</code> and points back at Ollama.</p>
+<p>The timeout is 60 seconds.</p>
+<h2 id="cache">Cache and retries</h2>
+<p><code>CachedLLM</code> stores each completion as a JSON file keyed by a hash of the provider, model, system prompt, and prompt, and counts calls and cache hits for <code>run.json</code>. Both clients retry up to three attempts on read errors and on HTTP 429, 502, 503, and 504, with backoff.</p>
 
 </main>
 </div>
-<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
+<footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
 </body>
 </html>

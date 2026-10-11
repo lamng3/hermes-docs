@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stages - Hermes</title>
-<meta name="description" content="The four research stages between the draft SPARQL query and parse checking.">
+<meta name="description" content="The stages the training-free system runs between the draft query and parse checking.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,34 +16,27 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
 <p class="kicker">hermes.stages</p>
 <h1>Stages</h1>
-<p class="lede">apply_stages walks a fixed tuple. Each function takes the draft and returns a query. Replacing a function is how a later technique enters the pipeline.</p>
+<p class="lede">apply_stages walks a fixed tuple. Each function takes the draft and returns a query. Replacing a function is how a later technique enters the training-free pipeline.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#contract">Contract</a></li><li><a href="#guardrails">Guardrails</a></li><li><a href="#query-guided">Query guided</a></li><li><a href="#context-guided">Context guided</a></li><li><a href="#chase">Chase and backchase</a></li></ol></nav>
-<div class="callout next"><span class="label">Later</span><p>All four functions return the draft unchanged. The order and the call signature are the stable part. The bodies are the work still to do.</p></div>
+<nav class="toc"><strong>On this page</strong><ol><li><a href="#contract">Contract</a></li><li><a href="#guardrails">Guardrails</a></li><li><a href="#later">Query guided, context guided, chase and backchase</a></li></ol></nav>
 <h2 id="contract">Contract</h2>
 <pre><code>def stage(sparql, *, ontology, context):
     return sparql
 
 STAGES = (guardrails, query_guided, context_guided, chase_backchase)</code></pre>
-<p><code>sparql</code> is the draft string after <a href="validate.html">extraction and modifier lifting</a>. <code>ontology</code> is the vocabulary dict from <code>load_vocabulary</code>, not the file path. <code>context</code> is the <code>Context</code> passed to <code>generate</code>.</p>
-<p><code>generate</code> calls <code>apply_stages</code> on the first draft, and again on the repair draft if the first query does not parse. A replacement should return a string. It should not assume it is the last step: validation still runs after the tuple.</p>
-<p>Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/stages.py">stages.py</a>.</p>
-<h2 id="guardrails">Guardrails <span class="tag">later</span></h2>
-<p>Reject or rewrite a query that leaves the ontology vocabulary. The intended check is the prefixes, classes, and properties already loaded for the prompt. The function does not inspect them yet.</p>
-<h2 id="query-guided">Query guided <span class="tag">later</span></h2>
-<p>Steer a draft using a target query shape or a previous SPARQL query. The prompt already shows one fixed shape. This stage is where a caller-supplied shape, or an earlier query, would revise the draft after generation.</p>
-<h2 id="context-guided">Context guided <span class="tag">later</span></h2>
-<p>Retrieve and place example questions, beyond stuffing them into the prompt. Examples today are only the JSONL rows the caller passed, copied verbatim into the prompt. This stage is where retrieval over a larger pool would choose and place them.</p>
-<h2 id="chase">Chase and backchase <span class="tag">later</span></h2>
-<p>Reformulate the query with ontology constraints, then minimize it. The function documents that intent and does not implement the algorithm. Constraints would come from the same Turtle file the vocabulary was loaded from. Minimization would drop triples the constraints make redundant.</p>
+<p><code>ontology</code> is the vocabulary dict, not a path. The stages run on the first draft and again on the repair draft. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/stages.py">stages.py</a>.</p>
+<h2 id="guardrails">Guardrails</h2>
+<p>Declares known prefixes that the draft uses but does not declare, from the vocabulary and the RDF, RDFS, OWL, and XSD namespaces. Prefixes inside IRIs and string literals are ignored. Rejecting terms outside the vocabulary is the job of the <a href="verifier.html">verifier</a>, which the planners use.</p>
+<h2 id="later">Query guided, context guided, chase and backchase <span class="tag">later</span></h2>
+<p>These return the draft unchanged. Chase and Backchase now lives in the <code>uniqgen</code> system, over constraint tables, rather than as a post-processing stage.</p>
 
 </main>
 </div>
-<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
+<footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
 </body>
 </html>

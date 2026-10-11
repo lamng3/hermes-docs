@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vocabulary - Hermes</title>
-<meta name="description" content="How hermes turns a Turtle ontology into prefixes, classes, and properties for the prompt.">
+<meta name="description" content="How Hermes reads classes, properties, and prefixes for prompting, through any graph store.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,32 +16,29 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="systems.html">Systems</a><a href="generate.html">Training-free</a><a href="vocabulary.html" aria-current="page">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html" aria-current="page">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
 <p class="kicker">hermes.ontology</p>
 <h1>Vocabulary</h1>
-<p class="lede">load_vocabulary reads a Turtle file and returns a small dict the prompt can list. It does not send the whole ontology.</p>
+<p class="lede">The vocabulary is a compact list of prefixes, classes, and properties. It is queried through a store, so it works the same for a file and an endpoint.</p>
 
 <nav class="toc"><strong>On this page</strong><ol><li><a href="#result">Result</a></li><li><a href="#terms">Classes and properties</a></li><li><a href="#prefixes">Prefixes</a></li></ol></nav>
 <h2 id="result">Result</h2>
-<pre><code>{
-  "path": "city.ttl",
+<pre><code>kg.vocabulary
+{
   "classes": ['ex:City "City"'],
   "properties": ['ex:inCountry "in country"'],
   "prefixes": [("ex", "http://example.org/demo#")],
 }</code></pre>
-<p>The parser is RDFLib with <code>format="turtle"</code>. Other serializations are not accepted. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/ontology.py">ontology.py</a>.</p>
+<p><code>vocabulary(store, declared, limit)</code> runs two queries on the store; <code>load_vocabulary(path)</code> does the same for one file. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/ontology.py">ontology.py</a>.</p>
 <h2 id="terms">Classes and properties</h2>
-<p>Classes are IRIs typed <code>owl:Class</code> or <code>rdfs:Class</code>. Properties are IRIs typed <code>owl:ObjectProperty</code>, <code>owl:DatatypeProperty</code>, or <code>rdf:Property</code>. Blank nodes are dropped. Each term is kept once.</p>
-<p>An <code>rdfs:label</code> is appended in quotes when one exists. The list stops at 60 classes and 60 properties. Later terms are omitted, so a large ontology is only partly visible to the model until this cap moves.</p>
-<p>A term is written as <code>prefix:local</code> when its namespace has a prefix, otherwise as a full IRI in angle brackets.</p>
+<p>Classes are IRIs typed <code>owl:Class</code> or <code>rdfs:Class</code>. Properties are IRIs typed <code>owl:ObjectProperty</code>, <code>owl:DatatypeProperty</code>, or <code>rdf:Property</code>. An <code>rdfs:label</code> is appended in quotes. Each list stops at <code>vocabulary_limit</code> terms (60 by default). A limit of 0 skips the queries, which is how large graphs such as DBpedia and Wikidata are declared in <code>data/graphs.yaml</code>.</p>
 <h2 id="prefixes">Prefixes</h2>
-<p>Declared prefixes come from <code>prefix name: &lt;namespace&gt;</code> and <code>@prefix</code> lines in the file text, not from the graph. RDF, RDFS, OWL, XSD, and XML namespaces are skipped. At most 12 prefixes are kept.</p>
-<p>A namespace that appears on a kept term and has no declaration gets a prefix from its last path segment, lowercased, cut to 16 characters, and made to start with a letter. Collisions gain a numeric suffix (<code>outage2</code>). Derivation also stops at 12 prefixes total.</p>
+<p>For files, declared prefixes come from the <code>@prefix</code> lines in the file text; for endpoints, from the graph's entry in <code>data/graphs.yaml</code>. RDF, RDFS, OWL, XSD, and XML namespaces are skipped, and at most 12 prefixes are kept. A namespace without a declaration gets a prefix from its last path segment, with a numeric suffix on collision.</p>
 
 </main>
 </div>
-<footer class="site">Hermes. Natural language to SPARQL with swappable systems. Code: <a href="https://github.com/lamng3/hermes">github.com/lamng3/hermes</a>.</footer>
+<footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
 </body>
 </html>
