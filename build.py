@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Write the Hermes docs site."""
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -39,7 +40,84 @@ def nav_html(current):
     return "".join(links)
 
 
+HEADER = """<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site">
+    <a href="algebra.html">Algebra</a>
+    <a href="verifier.html">Verifier</a>
+    <a href="benchmarks.html">Benchmarks</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
+</header>"""
+
+HEAD = """<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">"""
+
+HOME = """<section class="hero">
+  <div>
+    <h1>Verified query planning over the SPARQL algebra</h1>
+    <p class="lede">LEDE</p>
+    <pre class="install"><span class="prompt">$ </span>git clone https://github.com/lamng3/hermes.git &amp;&amp; cd hermes
+<span class="prompt">$ </span>pip install -e ".[dev]"
+<span class="prompt">$ </span>hermes generate --graph corporate --system prover --question "..."</pre>
+    <div class="actions">
+      <a class="btn solid" href="algebra.html">The algebra</a>
+      <a class="btn" href="verifier.html">Verifier</a>
+      <a class="btn" href="benchmarks.html">Benchmarks</a>
+    </div>
+  </div>
+  <div class="demo-card" id="demo">
+    <div class="head"><h3>Four systems, one question</h3><span class="tag">recorded <b>benchmark runs</b></span></div>
+    <label class="pick">Question <select id="question" aria-label="Question"></select></label>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <pre class="sparql" id="sparql"></pre>
+    <div class="verdict-row" id="scores"></div>
+    <hr class="rule">
+    <div class="head"><h3>Leaderboard</h3><span class="tag">set F-nDCG, <b>ck26</b></span></div>
+    <div class="bars" id="board"></div>
+    <p class="note">Qwen3-14B on 100 questions of the Text2SPARQL 2026 corporate benchmark; answers are scored by the benchmark's official scorer. Several official systems score higher than every Hermes run, and the leaderboard shows them. The page computes nothing: it shows <code>SOURCE</code>.</p>
+  </div>
+</section>
+<section class="block"><div class="prose-home">BODY</div></section>
+<script src="demo.js"></script>"""
+
+
+def home_page(title, description, lede, body):
+    import json
+
+    body = re.sub(r'<nav class="toc">.*?</nav>', "", body, flags=re.S)
+    source = json.loads((ROOT / "demo-data.json").read_text())["source"]
+    hero = HOME.replace("LEDE", lede).replace("SOURCE", source).replace("BODY", body)
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+{HEAD}
+<title>Hermes — verified query planning over the SPARQL algebra</title>
+<meta name="description" content="{description}">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+{HEADER}
+<main class="wrap" id="content" style="max-width:1280px">
+{hero}
+</main>
+<footer class="site">{FOOTER}</footer>
+</body>
+</html>
+"""
+
+
 def page(filename, title, description, kicker, lede, body):
+    if filename == "index.html":
+        (ROOT / filename).write_text(home_page(title, description, lede, body), encoding="utf-8")
+        return
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,13 +125,23 @@ def page(filename, title, description, kicker, lede, body):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} - Hermes</title>
 <meta name="description" content="{description}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top">
-  <a class="brand" href="index.html">Hermes</a>
-  <label class="nav-button" for="nav-toggle">Menu</label>
+<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site">
+    <a href="algebra.html">Algebra</a>
+    <a href="verifier.html">Verifier</a>
+    <a href="benchmarks.html">Benchmarks</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
