@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the Hermes docs site."""
+"""Write the Hermes manual."""
 
 import re
 from pathlib import Path
@@ -26,14 +26,14 @@ REPO = "https://github.com/lamng3/hermes"
 SRC = REPO + "/blob/master/src/hermes"
 
 FOOTER = (
-    "Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. "
+    "Hermes Manual. Verified Query Planning over the SPARQL Algebra with Language Agents. "
     f'<a href="{REPO}/blob/master/paper/hermes.pdf">Paper</a> · '
     f'<a href="{REPO}">Code</a>.'
 )
 
 
 def nav_html(current):
-    links = ['<a class="brand-desk" href="index.html">Hermes</a>']
+    links = ['<a class="brand-desk" href="index.html">Hermes Manual</a>']
     for href, label in NAV:
         current_attr = ' aria-current="page"' if href == current else ""
         links.append(f'<a href="{href}"{current_attr}>{label}</a>')
@@ -124,7 +124,7 @@ def page(filename, title, description, kicker, lede, body):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} - Hermes</title>
+<title>{title} — Hermes Manual</title>
 <meta name="description" content="{description}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
