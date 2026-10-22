@@ -15,7 +15,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
-  <nav class="site">
+  <nav class="site" aria-label="Site">
     <a href="algebra.html">Algebra</a>
     <a href="verifier.html">Verifier</a>
     <a href="benchmarks.html">Benchmarks</a>
@@ -25,7 +25,7 @@
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
-<nav class="nav">
+<nav class="nav" aria-label="Manual pages">
 <a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html" aria-current="page">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
@@ -33,7 +33,7 @@
 <h1>Graph stores</h1>
 <p class="lede">Systems and the scorer only call query(sparql), which returns SPARQL 1.1 JSON results. The same system runs on local files or a remote endpoint.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#kg">KnowledgeGraph</a></li><li><a href="#stores">Stores</a></li><li><a href="#linking">Entity linking</a></li></ol></nav>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#kg">KnowledgeGraph</a></li><li><a href="#stores">Stores</a></li><li><a href="#linking">Entity linking</a></li></ol></nav>
 <h2 id="kg">KnowledgeGraph</h2>
 <pre><code>from hermes import KnowledgeGraph
 
@@ -43,13 +43,12 @@ kg = KnowledgeGraph.from_endpoint("https://dbpedia.org/sparql",
                                   prefixes=[("dbo", "http://dbpedia.org/ontology/")])</code></pre>
 <p>A knowledge graph pairs a store with the <a href="vocabulary.html">vocabulary</a> used to prompt for it. <code>schema</code> names smaller files to read the vocabulary from. Loading is lazy, so nothing is parsed until the first query. <code>kg.executions</code> counts real executions. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/knowledge.py">knowledge.py</a>.</p>
 <h2 id="stores">Stores</h2>
-<table>
-<tr><th>Store</th><th>Backend</th></tr>
+<table><thead><tr><th scope="col">Store</th><th scope="col">Backend</th></tr></thead><tbody>
 <tr><td><code>OxigraphStore</code></td><td>Local RDF files in Oxigraph. The default: it loads the 26.6k-triple corporate graph in a fraction of a second.</td></tr>
 <tr><td><code>LocalStore</code></td><td>Local RDF files in rdflib, in pure Python.</td></tr>
 <tr><td><code>EndpointStore</code></td><td>A SPARQL endpoint over HTTP POST, with retries on server errors, a 60-second timeout, and a User-Agent header.</td></tr>
 <tr><td><code>CachedStore</code></td><td>Wraps any store, memoizes results, and counts executions.</td></tr>
-</table>
+</tbody></table>
 <p>A failed query raises <code>QueryError</code>; <code>try_query</code> returns empty results instead. Turtle, N-Triples, N-Quads, RDF/XML, and TriG are read by extension. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/store.py">store.py</a>.</p>
 <h2 id="linking">Entity linking</h2>
 <p><code>LabelIndex</code> reads <code>rdfs:label</code>, <code>skos:prefLabel</code>, <code>skos:altLabel</code>, and the local names of typed subjects once, and matches in memory, falling back to partial-word matches. <code>ExactLabel</code> sends capitalized n-grams of the question to the store as label literals in one <code>VALUES</code> query, for large endpoints such as DBpedia. <code>linker_for(kg)</code> picks the first for local stores and the second for endpoints. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/linking.py">linking.py</a>.</p>
