@@ -13,6 +13,7 @@ NAV = [
     ("systems.html", "Systems"),
     ("stores.html", "Graph stores"),
     ("benchmarks.html", "Benchmarks"),
+    ("leaderboard.html", "Leaderboard"),
     ("evaluation.html", "Evaluation"),
     ("experiments.html", "Experiments"),
     ("generate.html", "Training-free"),
@@ -363,6 +364,26 @@ kg = KnowledgeGraph.from_endpoint("https://dbpedia.org/sparql",
 <p>A failed query raises <code>QueryError</code>; <code>try_query</code> returns empty results instead. Turtle, N-Triples, N-Quads, RDF/XML, and TriG are read by extension. Source: <a href="{SRC}/store.py">store.py</a>.</p>
 <h2 id="linking">Entity linking</h2>
 <p><code>LabelIndex</code> reads <code>rdfs:label</code>, <code>skos:prefLabel</code>, <code>skos:altLabel</code>, and the local names of typed subjects once, and matches in memory, falling back to partial-word matches. <code>ExactLabel</code> sends capitalized n-grams of the question to the store as label literals in one <code>VALUES</code> query, for large endpoints such as DBpedia. <code>linker_for(kg)</code> picks the first for local stores and the second for endpoints. Source: <a href="{SRC}/linking.py">linking.py</a>.</p>
+""",
+    )
+    page(
+        "leaderboard.html",
+        "Leaderboard",
+        "Hermes runs and the official Text2SPARQL 2026 systems, ranked by set F-nDCG on the corporate and DBpedia tracks.",
+        "Results",
+        "Every Hermes run next to the official systems of the Text2SPARQL 2026 challenge, ranked by the official scorer.",
+        """
+<p>Hermes is a research system, and it does not lead this board: the best official system scores well above every Hermes run on both tracks. The board shows that on purpose. It is useful for what it separates inside Hermes: the planner with a verifier (<code>prover</code>) beats the unverified algebra agent, which beats one-shot generation, and larger Qwen3 models help.</p>
+<div data-arena data-src="leaderboard-data.json"></div>
+<script src="arena.js"></script>
+<h2 id="how-to-read-it">How to read it</h2>
+<ul>
+<li><strong>Set F-nDCG</strong> is the challenge's headline metric: set F1 over the returned rows, combined with ranking quality.</li>
+<li><strong>Hermes</strong> rows are runs of this repository (system and model in the name, <code>@qwen3-14b</code> for example). <strong>Official</strong> rows are the published scores of the challenge's other systems, shown for scale.</li>
+<li><strong>LLM calls per item</strong> and <strong>GPU minutes</strong> are what a run cost; official systems report neither.</li>
+<li>Click a column to sort. Ranks stay with the set F-nDCG, so a sort does not change who is first.</li>
+</ul>
+<p>The numbers come from <code>results/LEADERBOARD.md</code>, which <code>hermes report --write</code> generates from every run's <code>metrics.json</code>; see <a href="experiments.html">Experiments</a>.</p>
 """,
     )
     page(
