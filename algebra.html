@@ -26,7 +26,7 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav" aria-label="Manual pages">
-<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html" aria-current="page">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="playground.html">Playground</a><a href="algebra.html" aria-current="page">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
 <p class="kicker">hermes.algebra</p>
@@ -71,7 +71,7 @@ print(explorer.sparql)</code></pre>
 <h2 id="policies">Policies</h2>
 <p>Any policy can choose the actions. The <code>algebra-agent</code> system is an LLM policy: each turn it sees the action catalogue, the vocabulary, linked entities, every earlier action and observation, and the current query, and replies with one action. It stops on <code>finish</code> or after <code>max_steps</code> (15), refuses an action identical to the previous one, and returns the last committed plan that runs. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/systems/algebra_agent.py">algebra_agent.py</a>. UniQGen's Chase and Backchase is, in these terms, a beam search over <code>remove</code> and <code>triple</code>.</p>
 
-<nav class="pager" aria-label="Pages"><a class="prev" href="index.html"><span>Previous</span>Overview</a><a class="next" href="verifier.html"><span>Next</span>Verifier</a></nav>
+<nav class="pager" aria-label="Pages"><a class="prev" href="playground.html"><span>Previous</span>Playground</a><a class="next" href="verifier.html"><span>Next</span>Verifier</a></nav>
 </main>
 </div>
 <footer class="site">Hermes Manual. Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
