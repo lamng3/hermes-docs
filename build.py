@@ -221,7 +221,7 @@ pytest</code></pre>
         "Try it",
         "Ask a question over the corporate knowledge graph, get a SPARQL query from a recorded Hermes system or from a model you run, and replay it one pattern at a time.",
         """
-<aside class="callout warning"><span class="label">What runs where</span><p>Everything runs in your browser. The graph (about 26.6k triples of the Text2SPARQL corporate knowledge graph) is loaded into <strong>Oxigraph</strong>, a SPARQL engine compiled to WebAssembly. Hermes itself is Python and is not run here: the recorded queries are what its systems wrote with Qwen3-14B, and the model prompt is a port of the training-free system's. No model is hosted for this page, so <strong>Ask my model</strong> needs one you run yourself, for example Ollama on your computer.</p></aside>
+<aside class="callout warning"><span class="label">What runs where</span><p>Everything runs in your browser. The graph (about 26.6k triples of the Text2SPARQL corporate knowledge graph) is loaded into <strong>Oxigraph</strong>, a SPARQL engine compiled to WebAssembly. Hermes itself is Python and is not run here: the recorded queries are what its systems wrote with Qwen3-14B, and the model prompt is a port of the training-free system's. No model is hosted for this page, so <strong>Ask my model</strong> uses a model you run: <strong>Ollama</strong> on this computer is detected automatically, or you can load a tiny model that runs in your browser on WebGPU (a few hundred megabytes, kept by your browser), or point it at another endpoint.</p></aside>
 <div id="hplay" aria-label="Hermes playground">Loading the playground…</div>
 <script src="pg.js"></script>
 <script src="playground.js"></script>
@@ -231,6 +231,8 @@ pytest</code></pre>
 <li>Press <strong>Replay step by step</strong> to add the query's patterns one at a time. After each, the solution count and its change show what a planner sees as it builds a plan, and a step that empties the result points at the wrong pattern.</li>
 <li>To use a model, open <strong>Your model</strong>, point it at an OpenAI-compatible endpoint (Ollama is the default), and press <strong>Ask my model</strong>. The prompt is the training-free system's; if the draft does not parse the page asks once to repair it, as that system does.</li>
 </ol>
+<h2 id="small-models">What to expect from a small model</h2>
+<p>Writing a query from this prompt is hard for small models. The tiny model that runs in your browser (LFM2.5 350M, in tests on 2026-10-22) produced a draft that did not parse, even after the one repair, for all eight sample questions, and the <a href="leaderboard.html">leaderboard</a> shows the same trend: one-shot Qwen3-4B scores 0.000 and Qwen3-14B 0.090, against 0.282 for the best Hermes planner. Use Ollama with the largest model you have, and compare with the recorded queries above. For the in-browser model the page is mainly useful for seeing the pipeline cope: extraction, one repair, then a plain report of the failure.</p>
 <h2 id="what-is-not-here">What is not here</h2>
 <ul>
 <li>The typed algebra and the verifier are not run in the browser. The replay shows the planner's feedback (solutions and their change), not its type checks; see <a href="verifier.html">Verifier</a>.</li>
