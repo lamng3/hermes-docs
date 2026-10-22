@@ -182,7 +182,7 @@ body:not(:has(.layout)) .nav-button { display: none; }
 .tab[aria-selected="true"] { border-color: var(--primary); background: var(--primary-10); color: var(--primary); }
 label.pick { display: grid; gap: 4px; font-size: 12.5px; color: var(--subtle); }
 label.pick select { font: inherit; font-size: 14px; color: var(--fg); background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 5px 8px; width: 100%; }
-pre.sparql { font-size: 12px; min-height: 7em; white-space: pre-wrap; margin: 0 0 8px; }
+pre.sparql { font-size: 12px; min-height: 9em; white-space: pre-wrap; margin: 0 0 8px; }
 .verdict-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--subtle); }
 .verdict-row b { color: var(--fg); font-weight: 500; }
 .rule { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
