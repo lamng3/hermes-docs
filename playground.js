@@ -95,6 +95,7 @@ var HP = (function () {
   var result = h("div", { id: "hp-result", "aria-live": "polite" });
   var steps = h("div", { id: "hp-steps" });
   var where = h("p", { class: "pg-line", id: "hp-where" });
+  var paste = h("textarea", { id: "hp-paste", spellcheck: "false", placeholder: "Or paste a model's reply here (any chat model), with the query in it.", "aria-label": "A model's reply" });
   var SYS = { "algebra-agent": "Algebra agent", prover: "Prover", uniqgen: "UniQGen", "training-free": "Training-free" };
 
   // The PREFIX lines the recorded queries were written with (the display data keeps only their bodies).
@@ -128,8 +129,17 @@ var HP = (function () {
       }
       setQuery(sparql, note + (err ? " It still does not parse: " + err : ""));
       if (!err) await run();
-    } catch (e) { where.textContent = ""; result.replaceChildren(h("div", { class: "pg-error", role: "alert", text: String(e.message || e) + (/Failed to fetch|NetworkError/.test(String(e)) ? "\nThe browser could not reach the endpoint. Is it running, and does it allow this page's origin (CORS)? See the note under Your model." : "") })); }
+    } catch (e) { where.textContent = ""; result.replaceChildren(h("div", { class: "pg-error", role: "alert", text: String(e.message || e) })); }
   }
+  async function useReply() {
+    var raw = paste.value; result.replaceChildren();
+    try {
+      var sparql = HP.prepareDraft(raw), err = parseError(sparql);
+      setQuery(sparql, "From the reply you pasted, extracted like Hermes's training-free system." + (err ? " It does not parse: " + err : ""));
+      if (!err) await run();
+    } catch (e) { result.replaceChildren(h("div", { class: "pg-error", role: "alert", text: String(e.message || e) })); }
+  }
+  function copyPrompt() { currentPrompt(); var t = promptBox.textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { where.textContent = "Prompt copied. Paste it into any chat model, then paste the reply below."; }, function () { where.textContent = "Could not copy: open “The prompt a model gets” below and copy it from there."; }); }
   function parseError(sparql) { try { handle.store.query(sparql); return null; } catch (e) { return String(e.message || e).split("\n")[0]; } }
 
   async function explore() {
@@ -164,6 +174,8 @@ var HP = (function () {
       h("div", { class: "pg-row" }, question, datalist),
       h("div", { class: "pg-row" }, h("span", { class: "pg-status", text: "Recorded query from:" }), systemButtons),
       h("div", { class: "pg-row" }, h("button", { type: "button", class: "btn solid", id: "hp-ask", onclick: askModel }, "Ask my model"), h("span", { class: "pg-status", id: "hp-model", text: "" })),
+      h("div", { class: "pg-row" }, h("button", { type: "button", class: "btn", id: "hp-copy", onclick: copyPrompt }, "Copy the prompt"), h("span", { class: "pg-status", text: "to use any chat model, then paste its reply:" })),
+      h("div", { class: "pg-row" }, paste), h("div", { class: "pg-row" }, h("button", { type: "button", class: "btn", id: "hp-use", onclick: useReply }, "Use this reply")),
       where),
     h("div", { class: "pg-panel" }, h("h3", { text: "2. The query" }), editor,
       h("div", { class: "pg-row" }, h("button", { type: "button", class: "btn solid", id: "hp-run", onclick: run }, "Run on the graph"), h("button", { type: "button", class: "btn", id: "hp-explore", onclick: explore }, "Replay step by step"), STATUS),
