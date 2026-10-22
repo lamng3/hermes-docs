@@ -3,27 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Overview - Hermes</title>
-<meta name="description" content="Hermes: verified query planning over the SPARQL algebra with language agents. Paper, code, benchmarks, and experiments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<title>Hermes — verified query planning over the SPARQL algebra</title>
+<meta name="description" content="Hermes: verified query planning over the SPARQL algebra with language agents. Paper, code, benchmarks, and experiments.">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
-<header class="top">
-  <a class="brand" href="index.html">Hermes</a>
-  <label class="nav-button" for="nav-toggle">Menu</label>
-</header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
-<div class="layout">
-<nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html" aria-current="page">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
-</nav>
-<main id="content">
-<p class="kicker">Hermes</p>
-<h1>Overview</h1>
-<p class="lede">Hermes answers a question over a knowledge graph by planning a SPARQL query one algebra operator at a time. A verifier types every step against the RDF schema before it runs, and execution on the graph tells the planner what each step did.</p>
+<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site">
+    <a href="algebra.html">Algebra</a>
+    <a href="verifier.html">Verifier</a>
+    <a href="benchmarks.html">Benchmarks</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
+</header>
+<main class="wrap" id="content" style="max-width:1280px">
+<section class="hero">
+  <div>
+    <h1>Verified query planning over the SPARQL algebra</h1>
+    <p class="lede">Hermes answers a question over a knowledge graph by planning a SPARQL query one algebra operator at a time. A verifier types every step against the RDF schema before it runs, and execution on the graph tells the planner what each step did.</p>
+    <pre class="install"><span class="prompt">$ </span>git clone https://github.com/lamng3/hermes.git &amp;&amp; cd hermes
+<span class="prompt">$ </span>pip install -e ".[dev]"
+<span class="prompt">$ </span>hermes generate --graph corporate --system prover --question "..."</pre>
+    <div class="actions">
+      <a class="btn solid" href="algebra.html">The algebra</a>
+      <a class="btn" href="verifier.html">Verifier</a>
+      <a class="btn" href="benchmarks.html">Benchmarks</a>
+    </div>
+  </div>
+  <div class="demo-card" id="demo">
+    <div class="head"><h3>Four systems, one question</h3><span class="tag">recorded <b>benchmark runs</b></span></div>
+    <label class="pick">Question <select id="question" aria-label="Question"></select></label>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <pre class="sparql" id="sparql"></pre>
+    <div class="verdict-row" id="scores"></div>
+    <hr class="rule">
+    <div class="head"><h3>Leaderboard</h3><span class="tag">set F-nDCG, <b>ck26</b></span></div>
+    <div class="bars" id="board"></div>
+    <p class="note">Qwen3-14B on 100 questions of the Text2SPARQL 2026 corporate benchmark; answers are scored by the benchmark's official scorer. Several official systems score higher than every Hermes run, and the leaderboard shows them. The page computes nothing: it shows <code>hermes/results/ck26</code>.</p>
+  </div>
+</section>
+<section class="block"><div class="prose-home">
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#idea">The idea</a></li><li><a href="#pieces">The pieces</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#install">Install</a></li></ol></nav>
 <p>This site documents the code of the paper <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf"><em>Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents</em></a> (Lam Nguyen, Case Western Reserve University). The repository is its official implementation.</p>
 <h2 id="idea">The idea</h2>
 <p>Language models usually write a whole SPARQL query, then repair it after it fails. A query optimizer works differently: it applies one algebraic operator at a time and estimates its effect before keeping it. Hermes takes the optimizer's view of query generation:</p>
@@ -62,9 +90,9 @@ cd hermes
 pip install -e ".[dev]"
 pytest</code></pre>
 <p>The install name is <code>hermes-sparql</code> and the import name is <code>hermes</code>. Python 3.11 or newer. Dependencies are <code>rdflib</code>, <code>pyoxigraph</code>, <code>httpx</code>, and <code>pyyaml</code>. The tests need no model and no network.</p>
-
+</div></section>
+<script src="demo.js"></script>
 </main>
-</div>
 <footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
 </body>
 </html>
