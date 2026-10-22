@@ -15,7 +15,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
-  <nav class="site">
+  <nav class="site" aria-label="Site">
     <a href="algebra.html">Algebra</a>
     <a href="verifier.html">Verifier</a>
     <a href="benchmarks.html">Benchmarks</a>
@@ -25,7 +25,7 @@
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
-<nav class="nav">
+<nav class="nav" aria-label="Manual pages">
 <a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html" aria-current="page">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
@@ -33,7 +33,7 @@
 <h1>Verifier</h1>
 <p class="lede">The verifier checks a plan against the schema and a stated goal before anything runs. Ill-typed steps never reach the graph store.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#typing">Typing</a></li><li><a href="#errors">Errors</a></li><li><a href="#goals">Goals</a></li><li><a href="#prover">The prover system</a></li></ol></nav>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#typing">Typing</a></li><li><a href="#errors">Errors</a></li><li><a href="#goals">Goals</a></li><li><a href="#prover">The prover system</a></li></ol></nav>
 <h2 id="typing">Typing</h2>
 <p><code>Schema.from_kg(kg)</code> reads classes, properties, <code>rdfs:domain</code>, <code>rdfs:range</code>, and the closure of <code>rdfs:subClassOf</code>. <code>Kernel.check(plan, goal)</code> builds a typing context for the plan's variables:</p>
 <ul>
@@ -43,15 +43,14 @@
 </ul>
 <p>Two unrelated classes on one variable are a warning, not an error: RDF is open world and the schema need not declare disjointness. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/kernel.py">kernel.py</a>.</p>
 <h2 id="errors">Errors</h2>
-<table>
-<tr><th>Error</th><th>Example message</th></tr>
+<table><thead><tr><th scope="col">Error</th><th scope="col">Example message</th></tr></thead><tbody>
 <tr><td>Unknown term in a namespace the schema describes</td><td><code>unknown property ex:hosts (did you mean ex:hosted?)</code></td></tr>
 <tr><td>Literal where an entity is required</td><td><code>type mismatch: ex:hosted expects an entity of ex:OlympicGames, got the literal "Winter"</code></td></tr>
 <tr><td>Literal used as an entity, or the reverse</td><td><code>type mismatch: ?s is a literal but ...</code></td></tr>
 <tr><td>Unbound variable</td><td><code>unbound variable ?y in FILTER</code></td></tr>
 <tr><td>BIND onto a bound variable</td><td><code>BIND target ?g is already bound</code></td></tr>
 <tr><td>Ungrouped projection</td><td><code>?g is neither grouped nor aggregated</code></td></tr>
-</table>
+</tbody></table>
 <p>Variables that occur only inside <code>MINUS</code> are not bound, as in SPARQL. The check runs in one pass over the plan; nothing is executed.</p>
 <h2 id="goals">Goals</h2>
 <p>A goal states what the question asks for before the query exists:</p>

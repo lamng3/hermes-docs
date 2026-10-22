@@ -15,7 +15,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
-  <nav class="site">
+  <nav class="site" aria-label="Site">
     <a href="algebra.html">Algebra</a>
     <a href="verifier.html">Verifier</a>
     <a href="benchmarks.html">Benchmarks</a>
@@ -25,7 +25,7 @@
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
-<nav class="nav">
+<nav class="nav" aria-label="Manual pages">
 <a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html">Evaluation</a><a href="experiments.html" aria-current="page">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
@@ -33,7 +33,7 @@
 <h1>Experiments</h1>
 <p class="lede">An experiment is a YAML config. A run predicts, executes, and scores every item, and keeps everything needed to reproduce or audit it.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#config">Config</a></li><li><a href="#run">A run</a></li><li><a href="#report">Leaderboard</a></li><li><a href="#serve">Challenge API</a></li><li><a href="#rules">Rules for comparable numbers</a></li></ol></nav>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#config">Config</a></li><li><a href="#run">A run</a></li><li><a href="#report">Leaderboard</a></li><li><a href="#serve">Challenge API</a></li><li><a href="#rules">Rules for comparable numbers</a></li></ol></nav>
 <h2 id="config">Config</h2>
 <pre><code>benchmark: ck26
 system: uniqgen
@@ -53,13 +53,12 @@ leak_gold: true    # ablations only: gold answers in context.answers</code></pre
 <h2 id="run">A run</h2>
 <pre><code>hermes run configs/ck26/prover.yaml [--limit N] [--resume RUN_ID]</code></pre>
 <p>For each item, the system predicts a query, the query runs on the benchmark's store, and the answers are scored. Errors are recorded, not raised. A run writes <code>results/&lt;benchmark&gt;/&lt;config&gt;/&lt;run id&gt;/</code>:</p>
-<table>
-<tr><th>File</th><th>Contents</th></tr>
+<table><thead><tr><th scope="col">File</th><th scope="col">Contents</th></tr></thead><tbody>
 <tr><td><code>config.yaml</code></td><td>the config as run</td></tr>
 <tr><td><code>predictions.jsonl</code></td><td>per item: SPARQL, error, seconds, official and strict scores, <code>gold_reproduces</code>, and system traces</td></tr>
 <tr><td><code>metrics.json</code></td><td><code>official</code>, <code>strict</code>, and <code>reproducible</code> averages, error count, latency p50 and p95</td></tr>
 <tr><td><code>run.json</code></td><td>model, model calls and cache hits, graph executions, contaminated examples, the commit the run started from and whether <code>src/</code> had local changes</td></tr>
-</table>
+</tbody></table>
 <p>Observers receive start, item, and end events; <code>Progress</code> prints one line per item. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/experiments.py">experiments.py</a>.</p>
 <h2 id="report">Leaderboard</h2>
 <pre><code>hermes report [--benchmark ck26] [--write]</code></pre>

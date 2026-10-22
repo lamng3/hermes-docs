@@ -15,7 +15,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
-  <nav class="site">
+  <nav class="site" aria-label="Site">
     <a href="algebra.html">Algebra</a>
     <a href="verifier.html">Verifier</a>
     <a href="benchmarks.html">Benchmarks</a>
@@ -25,7 +25,7 @@
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
-<nav class="nav">
+<nav class="nav" aria-label="Manual pages">
 <a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html" aria-current="page">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
@@ -33,18 +33,17 @@
 <h1>Evaluation</h1>
 <p class="lede">The scorer reproduces all 5,024 published Text2SPARQL 2026 scores, so Hermes numbers sit on the leaderboard's scale.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#metrics">Metrics</a></li><li><a href="#parity">Parity</a></li><li><a href="#quirks">Official quirks and the strict variant</a></li><li><a href="#subset">Reproducible subset</a></li></ol></nav>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#metrics">Metrics</a></li><li><a href="#parity">Parity</a></li><li><a href="#quirks">Official quirks and the strict variant</a></li><li><a href="#subset">Reproducible subset</a></li></ol></nav>
 <h2 id="metrics">Metrics</h2>
 <p>The official scorer flattens every value of every variable into one set and scores it with trec_eval: set precision, set recall, and set F1 per question, nDCG where order matters, and the ranking metric <code>set_F_ndcg</code>, which uses nDCG on those questions and F1 elsewhere. <code>score(result, gold, order_matters, strict)</code> scores one question; <code>aggregate(per_item, languages, strict)</code> gives overall and per-language averages. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/evaluation.py">evaluation.py</a>.</p>
 <h2 id="parity">Parity</h2>
 <p><code>experiments/check_scorer.py</code> downloads every team's predictions and official scores for CK26 and DB26 from the pinned challenge repository, rescores them, and compares all 5,024 per-question and average numbers. None differ.</p>
 <h2 id="quirks">Official quirks and the strict variant</h2>
-<table>
-<tr><th>Official behavior</th><th>Strict</th></tr>
+<table><thead><tr><th scope="col">Official behavior</th><th scope="col">Strict</th></tr></thead><tbody>
 <tr><td>An ASK answer is a document named <code>true</code>. A gold <code>true</code> scores 1.0 whatever the answer; a gold <code>false</code> scores 0.0 for everyone.</td><td>Booleans score by exact match.</td></tr>
 <tr><td>nDCG ignores the returned order, since every value has the same score.</td><td>nDCG uses the returned order.</td></tr>
 <tr><td><code>set_F_ndcg</code> counts the scope's mean nDCG as one extra item.</td><td>A plain mean.</td></tr>
-</table>
+</tbody></table>
 <p>Runs report both, side by side.</p>
 <h2 id="subset">Reproducible subset</h2>
 <p>Each run also reruns every gold query on its own store and flags <code>gold_reproduces</code>. The <code>reproducible</code> averages restrict the official metrics to those items, which separates a method's errors from differences between graph engines.</p>

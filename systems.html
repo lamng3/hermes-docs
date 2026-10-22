@@ -15,7 +15,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
-  <nav class="site">
+  <nav class="site" aria-label="Site">
     <a href="algebra.html">Algebra</a>
     <a href="verifier.html">Verifier</a>
     <a href="benchmarks.html">Benchmarks</a>
@@ -25,7 +25,7 @@
 </header>
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
-<nav class="nav">
+<nav class="nav" aria-label="Manual pages">
 <a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html" aria-current="page">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
@@ -33,19 +33,18 @@
 <h1>Systems</h1>
 <p class="lede">A system turns a question into SPARQL over a knowledge graph. Systems register by name, so experiments swap them without code changes.</p>
 
-<nav class="toc"><strong>On this page</strong><ol><li><a href="#contract">Contract</a></li><li><a href="#shipped">Shipped systems</a></li><li><a href="#register">Register a system</a></li><li><a href="#plugins">Plugins</a></li></ol></nav>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#contract">Contract</a></li><li><a href="#shipped">Shipped systems</a></li><li><a href="#register">Register a system</a></li><li><a href="#plugins">Plugins</a></li></ol></nav>
 <h2 id="contract">Contract</h2>
 <pre><code>def system(question, kg, context):
     return {"sparql": "..."}</code></pre>
 <p><code>kg</code> is a <a href="stores.html"><code>KnowledgeGraph</code></a>. <code>context</code> is a <code>Context</code> or <code>None</code>: free text, example question and query pairs, and, for ablations only, reference answers. The result has at least <code>sparql</code>; systems may add traces and counters. <code>hermes.ask(question, kg_or_path, context, system=..., **params)</code> runs one. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/systems/__init__.py">systems/__init__.py</a>.</p>
 <h2 id="shipped">Shipped systems</h2>
-<table>
-<tr><th>Name</th><th>Method</th><th>Parameters</th></tr>
+<table><thead><tr><th scope="col">Name</th><th scope="col">Method</th><th scope="col">Parameters</th></tr></thead><tbody>
 <tr><td><code>training-free</code></td><td>One prompted draft, fixed stages, one repair. <a href="generate.html">Details</a>.</td><td><code>llm</code></td></tr>
 <tr><td><code>uniqgen</code></td><td>UniQGen (Wang et al., <a href="https://arxiv.org/abs/2605.00845">arXiv:2605.00845</a>): a constraint table, then Chase and Backchase against reference answers.</td><td><code>beam_width</code> 5, <code>max_depth</code> 5, <code>threshold</code> 1.0, <code>alpha</code> 0.5, <code>hops</code> 2, <code>oracle</code> (LLM, <code>"gold"</code>, or a callable), <code>llm</code></td></tr>
 <tr><td><code>algebra-agent</code></td><td>An LLM plans over the <a href="algebra.html">algebra</a> with execution feedback.</td><td><code>max_steps</code> 15, <code>sample_size</code> 5, <code>max_entities</code> 10, <code>llm</code></td></tr>
 <tr><td><code>prover</code></td><td>The algebra agent with the <a href="verifier.html">verifier</a> and goals.</td><td>as <code>algebra-agent</code></td></tr>
-</table>
+</tbody></table>
 <p>The UniQGen reimplementation differs from the paper in two documented ways: queries are rendered from constraints deterministically, and candidates are scored by comparing answer sets with the reference answers. That keeps it at two model calls per question. Aggregates, <code>ORDER BY</code>, and <code>LIMIT</code> are not handled.</p>
 <h2 id="register">Register a system</h2>
 <pre><code>import hermes
