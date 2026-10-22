@@ -618,6 +618,9 @@ text = client.complete(prompt, system="...")</code></pre>
 <p><code>CachedLLM</code> stores each completion as a JSON file keyed by a hash of the provider, model, system prompt, and prompt, and counts calls and cache hits for <code>run.json</code>. Both clients retry up to three attempts on read errors and on HTTP 429, 502, 503, and 504, with backoff.</p>
 """,
     )
+    import normalize
+
+    normalize.run(ROOT)
 
 
 if __name__ == "__main__":

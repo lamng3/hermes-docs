@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stages - Hermes</title>
+<title>Stages — Hermes</title>
 <meta name="description" content="The stages the training-free system runs between the draft query and parse checking.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,7 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav">
-<a class="brand-desk" href="index.html">Hermes</a><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="evaluation.html">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html" aria-current="page">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
 </nav>
 <main id="content">
 <p class="kicker">hermes.stages</p>
@@ -45,8 +45,10 @@ STAGES = (guardrails, query_guided, context_guided, chase_backchase)</code></pre
 <h2 id="later">Query guided, context guided, chase and backchase <span class="tag">later</span></h2>
 <p>These return the draft unchanged. Chase and Backchase now lives in the <code>uniqgen</code> system, over constraint tables, rather than as a post-processing stage.</p>
 
+<nav class="pager" aria-label="Pages"><a class="prev" href="vocabulary.html"><span>Previous</span>Vocabulary</a><a class="next" href="validate.html"><span>Next</span>Validation</a></nav>
 </main>
 </div>
 <footer class="site">Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
+<script src="search.js"></script>
 </body>
 </html>
