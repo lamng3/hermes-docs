@@ -119,7 +119,7 @@ var HP = (function () {
   async function askModel() {
     var q = currentPrompt();
     if (!q || q === "(your question)") { result.replaceChildren(h("p", { class: "pg-note", text: "Type a question first." })); return; }
-    where.textContent = "Asking " + PG.llmConfig().model + " at " + PG.llmConfig().base + "…"; result.replaceChildren();
+    where.textContent = "Asking " + PG.llmName() + "…"; result.replaceChildren();
     try {
       var raw = await PG.chat([{ role: "user", content: HP.buildPrompt(q, data.vocabulary) }]);
       var sparql = HP.prepareDraft(raw), err = parseError(sparql), note = "Model output, extracted like Hermes's training-free system.";
@@ -193,7 +193,7 @@ var HP = (function () {
   handle = await PG.openStore("hermes:corporate", seed.map(function (t) { return { text: t, format: "text/turtle" }; }));
   STATUS.textContent = handle.store.size.toLocaleString() + " triples" + (handle.restored ? ", restored from this browser" : ", loaded");
   vocabBox.append(h("p", { class: "pg-sub", text: "Classes" }), h("pre", { class: "pg-pre", text: data.vocabulary.classes.join("\n") }), h("p", { class: "pg-sub", text: "Properties" }), h("pre", { class: "pg-pre", text: data.vocabulary.properties.join("\n") }));
-  PG.llmPanel(document.getElementById("hp-llm"), { onChange: function () { document.getElementById("hp-model").textContent = PG.llmConfig().model; } });
-  document.getElementById("hp-model").textContent = PG.llmConfig().model;
+  PG.llmPanel(document.getElementById("hp-llm"), { onChange: function () { document.getElementById("hp-model").textContent = PG.llmName(); } });
+  document.getElementById("hp-model").textContent = PG.llmName();
   currentPrompt(); recorded("prover"); await run();
 })();
