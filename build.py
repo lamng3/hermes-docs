@@ -74,6 +74,7 @@ HOME = """<section class="hero">
   </div>
   <div class="demo-card" id="demo">
     <div class="head"><h3>Four systems, one question</h3><span class="tag">recorded <b>benchmark runs</b></span></div>
+    <p class="try">Try it: Pick a question, then switch systems to compare the SPARQL each one wrote and how it scored.</p>
     <label class="pick">Question <select id="question" aria-label="Question"></select></label>
     <div class="tabs" id="tabs" role="tablist"></div>
     <pre class="sparql" id="sparql"></pre>
