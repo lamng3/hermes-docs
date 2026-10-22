@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parent
 
 NAV = [
     ("index.html", "Overview"),
+    ("playground.html", "Playground"),
     ("algebra.html", "Algebra"),
     ("verifier.html", "Verifier"),
     ("systems.html", "Systems"),
@@ -45,7 +46,7 @@ HEADER = """<header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
   <nav class="site">
     <a href="algebra.html">Algebra</a>
-    <a href="verifier.html">Verifier</a>
+    <a href="playground.html">Playground</a>
     <a href="benchmarks.html">Benchmarks</a>
     <label class="nav-button" for="nav-toggle">Menu</label>
     <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
@@ -69,7 +70,7 @@ HOME = """<section class="hero">
 <span class="prompt">$ </span>hermes generate --graph corporate --system prover --question "..."</pre>
     <div class="actions">
       <a class="btn solid" href="algebra.html">The algebra</a>
-      <a class="btn" href="verifier.html">Verifier</a>
+      <a class="btn" href="playground.html">Playground</a>
       <a class="btn" href="benchmarks.html">Benchmarks</a>
     </div>
   </div>
@@ -211,6 +212,30 @@ cd hermes
 pip install -e ".[dev]"
 pytest</code></pre>
 <p>The install name is <code>hermes-sparql</code> and the import name is <code>hermes</code>. Python 3.11 or newer. Dependencies are <code>rdflib</code>, <code>pyoxigraph</code>, <code>httpx</code>, and <code>pyyaml</code>. The tests need no model and no network.</p>
+""",
+    )
+    page(
+        "playground.html",
+        "Playground",
+        "Ask a question over the corporate knowledge graph in the browser: a recorded Hermes query, or one from a model you run, run on the real graph and replayed one pattern at a time.",
+        "Try it",
+        "Ask a question over the corporate knowledge graph, get a SPARQL query from a recorded Hermes system or from a model you run, and replay it one pattern at a time.",
+        """
+<aside class="callout warning"><span class="label">What runs where</span><p>Everything runs in your browser. The graph (about 26.6k triples of the Text2SPARQL corporate knowledge graph) is loaded into <strong>Oxigraph</strong>, a SPARQL engine compiled to WebAssembly. Hermes itself is Python and is not run here: the recorded queries are what its systems wrote with Qwen3-14B, and the model prompt is a port of the training-free system's. No model is hosted for this page, so <strong>Ask my model</strong> needs one you run yourself, for example Ollama on your computer.</p></aside>
+<div id="hplay" aria-label="Hermes playground">Loading the playground…</div>
+<script src="pg.js"></script>
+<script src="playground.js"></script>
+<h2 id="how-to-use-it">How to use it</h2>
+<ol>
+<li>Pick a sample question and press one of the <strong>recorded</strong> systems: the query it wrote appears, with its recorded score. Run it on the graph and compare what the systems wrote. The prover's query is loaded first.</li>
+<li>Press <strong>Replay step by step</strong> to add the query's patterns one at a time. After each, the solution count and its change show what a planner sees as it builds a plan, and a step that empties the result points at the wrong pattern.</li>
+<li>To use a model, open <strong>Your model</strong>, point it at an OpenAI-compatible endpoint (Ollama is the default), and press <strong>Ask my model</strong>. The prompt is the training-free system's; if the draft does not parse the page asks once to repair it, as that system does.</li>
+</ol>
+<h2 id="what-is-not-here">What is not here</h2>
+<ul>
+<li>The typed algebra and the verifier are not run in the browser. The replay shows the planner's feedback (solutions and their change), not its type checks; see <a href="verifier.html">Verifier</a>.</li>
+<li>Answers are not scored here. The scores shown for recorded queries come from the benchmark's official scorer, as in the <a href="leaderboard.html">leaderboard</a>.</li>
+</ul>
 """,
     )
     page(
