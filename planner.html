@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<title>Planner — Hermes Manual</title>
+<meta name="description" content="SPARQL as relational algebra: translation, System R estimates, rewrite rules, the plan executor, and the study on gold queries.">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site" aria-label="Site">
+    <a href="ask.html">Ask</a>
+    <a href="plan.html">Plan</a>
+    <a href="pipeline.html">Pipeline</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav" aria-label="Manual pages">
+<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="ask.html">Try: ask a question</a><a href="plan.html">Try: plan a query</a><a href="pipeline.html">Pipeline</a><a href="planner.html" aria-current="page">Planner</a><a href="pricing.html">Pricing and budgets</a><a href="graphs.html">Graphs</a><a href="evaluation.html">Evaluation</a><a href="baselines.html">Baselines</a><a href="reference.html">Python and CLI</a>
+</nav>
+<main id="content">
+<p class="kicker">hermes.planner</p>
+<h1>Planner</h1>
+<p class="lede">A query becomes a relational-algebra plan, the optimizer rewrites it with the graph's statistics, and the plan executor runs it against a graph that answers only single-pattern queries.</p>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#algebra">Relational algebra</a></li><li><a href="#estimates">Estimates</a></li><li><a href="#rules">Rewrite rules</a></li><li><a href="#executor">Executors</a></li><li><a href="#study">Study on gold queries</a></li></ol></nav>
+
+<h2 id="algebra">Relational algebra</h2>
+<p>A triple pattern is a relation over its variables, a basic graph pattern the natural join of its patterns, and every other SPARQL operator a relational one: σ FILTER, π SELECT, ⟕ OPTIONAL, ∪ UNION, − MINUS, ε BIND, δ DISTINCT, τ ORDER BY, λ LIMIT and OFFSET, γ GROUP BY. <code>translate</code> keeps the patterns in the written order, so every reordering is the optimizer's and can be measured. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/planner/algebra.py">algebra.py</a>.</p>
+<pre><code>hermes plan --graph corporate --query 'SELECT ?name ?email WHERE { ?p pv:email ?email . ?p pv:name ?name .
+  ?p pv:memberOf ?d . ?d pv:name "Marketing" . FILTER(CONTAINS(?name, "S")) }'
+
+Optimized
+π ?name ?email                                   est 10.2 · got 2
+└─ ⋈
+   ├─ ⋈
+   │  ├─ ⋈
+   │  │  ├─ scan (?d pv:name "Marketing")          est 1.2 · got 1
+   │  │  └─ scan (?p pv:memberOf ?d)               est 53.0 · got 10
+   │  └─ σ CONTAINS(?name, "S")
+   │     └─ scan (?p pv:name ?name)                got 10
+   └─ scan (?p pv:email ?email)                    est 53.0 · got 2
+                      as written   optimized
+rows fetched                 160          23
+intermediate rows            280          41</code></pre>
+<h2 id="estimates">Estimates</h2>
+<p>System R (Selinger et al., SIGMOD 1979), from the graph's statistics: per predicate its triples, distinct subjects and objects; per class its instances; property paths from their predicates. A scan joined after operands that bind its variables is priced as an index access, about (distinct bindings) × (rows per binding), because that is how the executor runs it. The cost of a plan is C_out, the summed sizes of its scans and joins. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/planner/estimate.py">estimate.py</a>.</p>
+<h2 id="rules">Rewrite rules</h2>
+<p>Each rule is a command that rewrites the plan and logs what it did (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/planner/rules.py">rules.py</a>); the optimizer applies them in order, and a list of rules can be passed instead.</p>
+<ul>
+<li><b>push selections</b>: each σ moves to the lowest operator that binds all of its variables in every solution.</li>
+<li><b>order joins</b>: each join group is reordered by dynamic programming over left-deep orders without cartesian products, minimizing C_out; each selection goes right after the operand that binds its last variable.</li>
+<li><b>prune scans</b>: a scan fetches only the variables used above it.</li>
+</ul>
+<h2 id="executor">Executors</h2>
+<p>The plan executor runs scans as single-pattern queries and joins as hash joins, or bind joins that send the left side's bindings with the scan (up to 500, 100 per query); every other operator is evaluated by rdflib's SPARQL engine over its children's rows, with EXISTS and property paths reading the graph through the same single-pattern queries. The engine executor sends the query text to the store and is the reference. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/planner/executor.py">executor.py</a>.</p>
+<h2 id="study">Study on gold queries</h2>
+<p><code>experiments/planner_study.py</code> plans every distinct gold query of a benchmark as written and optimized, runs both, and compares their answers with the engine's. Report: <a href="https://github.com/lamng3/hermes/blob/master/results/planner/README.md">results/planner</a>.</p>
+<table>
+<thead><tr><th scope="col"></th><th scope="col">CK26</th><th scope="col">DB26</th></tr></thead>
+<tbody>
+<tr><td>same answers as the engine</td><td>46</td><td>41</td></tr>
+<tr><td>same up to rows tied under ORDER BY with LIMIT</td><td>1</td><td>0</td></tr>
+<tr><td>the engine is wrong, the plan right (Oxigraph 0.5.11 reads <code>a / b * c</code> as <code>a / (b * c)</code>)</td><td>1</td><td>0</td></tr>
+<tr><td>the engine cannot run the gold query</td><td>2</td><td>0</td></tr>
+<tr><td>a scan over 200,000 rows, or the endpoint failed</td><td>0</td><td>9</td></tr>
+<tr><td><b>plans that ran and gave other answers</b></td><td><b>0</b></td><td><b>0</b></td></tr>
+<tr><td>intermediate rows, as written → optimized</td><td>1,302,989 → 106,719</td><td>1,097,107 → 1,060,291</td></tr>
+<tr><td>rows fetched, as written → optimized</td><td>56,460 → 48,429</td><td>622,861 → 588,535</td></tr>
+<tr><td>plan seconds, as written → optimized</td><td>4.67 → 1.35</td><td>68.4 → 29.7</td></tr>
+<tr><td>q-error of the row estimate, median / 90th percentile</td><td>1.10 / 5.17</td><td>1.41 / 10.79</td></tr>
+</tbody></table>
+<p>Most gold queries have one or two patterns and nothing to reorder; the savings come from the others, such as CK26 question 28 (intermediate rows 419,035 → 3,353) and DB26 question 41 (rows fetched 32,896 → 27).</p>
+
+<nav class="pager" aria-label="Pages"><a class="prev" href="pipeline.html"><span>Previous</span>Pipeline</a><a class="next" href="pricing.html"><span>Next</span>Pricing and budgets</a></nav>
+</main>
+</div>
+<footer class="site">Hermes Manual. <a href="https://github.com/lamng3/hermes">Code</a> · <a href="https://github.com/lamng3/hermes/tree/master/results">Results</a>.</footer>
+<script src="search.js"></script>
+</body>
+</html>

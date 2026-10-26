@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Evaluation — Hermes Manual</title>
-<meta name="description" content="Official Text2SPARQL metrics reproduced exactly, a strict variant, and a reproducible subset.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<title>Evaluation — Hermes Manual</title>
+<meta name="description" content="Benchmarks, the official Text2SPARQL scorer, experiment runs, and the results of Hermes and its baselines.">
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="site">
   <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
   <nav class="site" aria-label="Site">
-    <a href="algebra.html">Algebra</a>
-    <a href="verifier.html">Verifier</a>
-    <a href="benchmarks.html">Benchmarks</a>
+    <a href="ask.html">Ask</a>
+    <a href="plan.html">Plan</a>
+    <a href="pipeline.html">Pipeline</a>
     <label class="nav-button" for="nav-toggle">Menu</label>
     <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
   </nav>
@@ -26,32 +26,28 @@
 <input id="nav-toggle" class="nav-toggle" type="checkbox">
 <div class="layout">
 <nav class="nav" aria-label="Manual pages">
-<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="playground.html">Playground</a><a href="steps.html">Step through</a><a href="algebra.html">Algebra</a><a href="verifier.html">Verifier</a><a href="systems.html">Systems</a><a href="stores.html">Graph stores</a><a href="benchmarks.html">Benchmarks</a><a href="leaderboard.html">Leaderboard</a><a href="evaluation.html" aria-current="page">Evaluation</a><a href="experiments.html">Experiments</a><a href="generate.html">Training-free</a><a href="vocabulary.html">Vocabulary</a><a href="stages.html">Stages</a><a href="validate.html">Validation</a><a href="models.html">Models</a>
+<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="ask.html">Try: ask a question</a><a href="plan.html">Try: plan a query</a><a href="pipeline.html">Pipeline</a><a href="planner.html">Planner</a><a href="pricing.html">Pricing and budgets</a><a href="graphs.html">Graphs</a><a href="evaluation.html" aria-current="page">Evaluation</a><a href="baselines.html">Baselines</a><a href="reference.html">Python and CLI</a>
 </nav>
 <main id="content">
-<p class="kicker">hermes.evaluation</p>
+<p class="kicker">hermes.experiments</p>
 <h1>Evaluation</h1>
-<p class="lede">The scorer reproduces all 5,024 published Text2SPARQL 2026 scores, so Hermes numbers sit on the leaderboard's scale.</p>
+<p class="lede">Six benchmarks in one format, a scorer that reproduces every published Text2SPARQL 2026 score, and runs that record their config, commit, answers and cost.</p>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#benchmarks">Benchmarks</a></li><li><a href="#runs">Runs</a></li><li><a href="#results">Results</a></li></ol></nav>
 
-<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#metrics">Metrics</a></li><li><a href="#parity">Parity</a></li><li><a href="#quirks">Official quirks and the strict variant</a></li><li><a href="#subset">Reproducible subset</a></li></ol></nav>
-<h2 id="metrics">Metrics</h2>
-<p>The official scorer flattens every value of every variable into one set and scores it with trec_eval: set precision, set recall, and set F1 per question, nDCG where order matters, and the ranking metric <code>set_F_ndcg</code>, which uses nDCG on those questions and F1 elsewhere. <code>score(result, gold, order_matters, strict)</code> scores one question; <code>aggregate(per_item, languages, strict)</code> gives overall and per-language averages. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/evaluation.py">evaluation.py</a>.</p>
-<h2 id="parity">Parity</h2>
-<p><code>experiments/check_scorer.py</code> downloads every team's predictions and official scores for CK26 and DB26 from the pinned challenge repository, rescores them, and compares all 5,024 per-question and average numbers. None differ.</p>
-<h2 id="quirks">Official quirks and the strict variant</h2>
-<table><thead><tr><th scope="col">Official behavior</th><th scope="col">Strict</th></tr></thead><tbody>
-<tr><td>An ASK answer is a document named <code>true</code>. A gold <code>true</code> scores 1.0 whatever the answer; a gold <code>false</code> scores 0.0 for everyone.</td><td>Booleans score by exact match.</td></tr>
-<tr><td>nDCG ignores the returned order, since every value has the same score.</td><td>nDCG uses the returned order.</td></tr>
-<tr><td><code>set_F_ndcg</code> counts the scope's mean nDCG as one extra item.</td><td>A plain mean.</td></tr>
-</tbody></table>
-<p>Runs report both, side by side.</p>
-<h2 id="subset">Reproducible subset</h2>
-<p>Each run also reruns every gold query on its own store and flags <code>gold_reproduces</code>. The <code>reproducible</code> averages restrict the official metrics to those items, which separates a method's errors from differences between graph engines.</p>
+<h2 id="benchmarks">Benchmarks</h2>
+<p>Text2SPARQL 2026 corporate (CK26) and DBpedia (DB26), their 2025 editions, QALD-9-plus and QALD-10, fetched with <code>hermes data fetch</code>. CK26 is CK25 paraphrased, so CK25 is not a development set for CK26.</p>
+<h2 id="runs">Runs</h2>
+<pre><code>hermes run configs/ck26/hermes.yaml
+hermes sweep configs/sweeps/hermes.yaml   # Hermes, its ablations, and baselines
+hermes report</code></pre>
+<p>Each run writes its config, commit, every prediction with its cost, and metrics under <code>results/</code>. Scores: the official set F1 and F1-nDCG, a strict variant, and the subset whose gold answers reproduce on the local engine.</p>
+<h2 id="results">Results</h2>
+<p>The pipeline's runs are in <a href="https://github.com/lamng3/hermes/tree/master/results">results/</a>.</p>
 
-<nav class="pager" aria-label="Pages"><a class="prev" href="leaderboard.html"><span>Previous</span>Leaderboard</a><a class="next" href="experiments.html"><span>Next</span>Experiments</a></nav>
+<nav class="pager" aria-label="Pages"><a class="prev" href="graphs.html"><span>Previous</span>Graphs</a><a class="next" href="baselines.html"><span>Next</span>Baselines</a></nav>
 </main>
 </div>
-<footer class="site">Hermes Manual. <a href="https://github.com/lamng3/hermes/blob/master/paper/hermes.pdf">Paper</a> · <a href="https://github.com/lamng3/hermes">Code</a>.</footer>
+<footer class="site">Hermes Manual. <a href="https://github.com/lamng3/hermes">Code</a> · <a href="https://github.com/lamng3/hermes/tree/master/results">Results</a>.</footer>
 <script src="search.js"></script>
 </body>
 </html>

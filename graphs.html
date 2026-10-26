@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<title>Graphs — Hermes Manual</title>
+<meta name="description" content="Knowledge graphs in Hermes: local RDF files in Oxigraph or rdflib, SPARQL endpoints, and the browser.">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site" aria-label="Site">
+    <a href="ask.html">Ask</a>
+    <a href="plan.html">Plan</a>
+    <a href="pipeline.html">Pipeline</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav" aria-label="Manual pages">
+<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="ask.html">Try: ask a question</a><a href="plan.html">Try: plan a query</a><a href="pipeline.html">Pipeline</a><a href="planner.html">Planner</a><a href="pricing.html">Pricing and budgets</a><a href="graphs.html" aria-current="page">Graphs</a><a href="evaluation.html">Evaluation</a><a href="baselines.html">Baselines</a><a href="reference.html">Python and CLI</a>
+</nav>
+<main id="content">
+<p class="kicker">hermes.graph</p>
+<h1>Graphs</h1>
+<p class="lede">A KnowledgeGraph is a store to query, a schema to read the ontology from, and preferred prefixes. Stores answer SPARQL 1.1 JSON, so files and endpoints are interchangeable.</p>
+
+<pre><code>from hermes import KnowledgeGraph
+kg = KnowledgeGraph.from_files("ontology.ttl", "data.ttl", schema=["ontology.ttl"])
+kg = KnowledgeGraph.from_endpoint("https://dbpedia.org/sparql")
+from hermes import benchmarks; kg = benchmarks.graph("corporate")   # data/graphs.yaml</code></pre>
+<ul>
+<li><b>Oxigraph</b> (default for files), <b>rdflib</b>, <b>endpoint</b> and <b>browser</b> (the page's Oxigraph under Pyodide) stores; a caching decorator memoizes results and counts executions. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/graph/stores.py">stores.py</a>.</li>
+<li>Statistics are read once for local graphs and one predicate at a time from endpoints (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pricing/statistics.py">statistics.py</a>).</li>
+<li>Entity linking matches labels exactly, or by their words (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/graph/linking.py">linking.py</a>).</li>
+</ul>
+
+<nav class="pager" aria-label="Pages"><a class="prev" href="pricing.html"><span>Previous</span>Pricing and budgets</a><a class="next" href="evaluation.html"><span>Next</span>Evaluation</a></nav>
+</main>
+</div>
+<footer class="site">Hermes Manual. <a href="https://github.com/lamng3/hermes">Code</a> · <a href="https://github.com/lamng3/hermes/tree/master/results">Results</a>.</footer>
+<script src="search.js"></script>
+</body>
+</html>
