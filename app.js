@@ -218,7 +218,7 @@ def plan(key, sparql):
       const ended = (stage) => (r.events.find((e) => e.stage === stage && e.kind === "end") || {}).data || {};
       const gen = ended("generate");
       const s = r.spend.total, est = r.spend.estimated;
-      out.replaceChildren(
+      out.replaceChildren(...[
         r.error ? h("div", { class: "pg-error", text: "No answer: " + r.error }) : null,
         card("1 · Ontology slice", h("p", { class: "pg-note", text: "The classes, properties, values and entities the question needs, chosen from the ontology catalog." }), r.slice ? pre(r.slice) : null),
         card("2 · Examples", h("p", { class: "pg-note", text: "Synthetic question and query pairs over this graph, closest to the question." }), list(r.examples)),
@@ -227,8 +227,8 @@ def plan(key, sparql):
         r.written ? card("5 · Plan", h("div", { class: "pg-cols" }, h("div", {}, h("h4", { text: "As written" }), pre(r.written, "hd-tree")), h("div", {}, h("h4", { text: "Optimized" }), pre(r.optimized, "hd-tree"))), h("h4", { text: "Rewrites" }), list(r.rewrites)) : null,
         card("6 · Price and spend", h("table", { class: "pg-table" }, h("thead", {}, h("tr", {}, ["", "estimated", "spent"].map((t) => h("th", { scope: "col", text: t })))),
           h("tbody", {}, [["model calls", "llm_calls"], ["tokens in", "input_tokens"], ["tokens out", "output_tokens"], ["graph queries", "queries"], ["graph rows", "rows"]].map(([label, k]) => h("tr", {}, h("td", { text: label }), h("td", { text: Math.round(est[k]).toLocaleString() }), h("td", { text: Math.round(s[k]).toLocaleString() })))))),
-        r.variables ? card("7 · Answer", r.boolean != null ? h("p", { text: "Answer: " + r.boolean }) : [h("p", { class: "pg-line", text: `${r.count} rows` }), table(r.variables, r.rows)],
-          sample ? h("p", { class: "pg-line" }, h("span", { class: "pg-tag " + (sample.expected.sparql === r.sparql ? "ok" : "bad"), text: sample.expected.sparql === r.sparql ? "same as the native run" : "differs from the native run" })) : null) : null);
+        r.variables ? card("7 · Answer", r.boolean != null ? h("p", { text: "Answer: " + r.boolean }) : [h("p", { class: "pg-line", text: `${r.count} ${r.count === 1 ? "row" : "rows"}` }), table(r.variables, r.rows)],
+          sample ? h("p", { class: "pg-line" }, h("span", { class: "pg-tag " + (sample.expected.sparql === r.sparql ? "ok" : "bad"), text: sample.expected.sparql === r.sparql ? "same as the native run" : "differs from the native run" })) : null) : null].filter(Boolean));
     }
     root.replaceChildren(h("div", { class: "pg-panel" }, picker.el, h("div", { class: "pg-row" }, question, samples),
       h("div", { class: "pg-row" }, h("label", {}, "Replies "), mode), llm,
@@ -262,7 +262,7 @@ def plan(key, sparql):
           card("What each plan did", h("table", { class: "pg-table" }, h("thead", {}, h("tr", {}, ["", "as written", "optimized"].map((t) => h("th", { scope: "col", text: t })))),
             h("tbody", {}, row("estimated C_out", "cost"), row("store queries", "queries"), row("rows fetched", "fetched"), row("intermediate rows", "intermediate"), row("milliseconds", "ms"))),
             h("p", { class: "pg-line" }, h("span", { class: "pg-tag " + (r.same ? "ok" : "bad"), text: r.same ? "same answers as the engine" : "answers differ from the engine" }))),
-          card("Answer", r.boolean != null ? h("p", { text: "Answer: " + r.boolean }) : [h("p", { class: "pg-line", text: `${r.count} rows` }), table(r.variables, r.rows)]));
+          card("Answer", r.boolean != null ? h("p", { text: "Answer: " + r.boolean }) : [h("p", { class: "pg-line", text: `${r.count} ${r.count === 1 ? "row" : "rows"}` }), table(r.variables, r.rows)]));
         status("");
       } catch (e) { out.replaceChildren(h("div", { class: "pg-error", text: String(e.message || e).split("\n").slice(-3).join("\n") })); }
     });
