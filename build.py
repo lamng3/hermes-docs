@@ -113,7 +113,7 @@ def main():
         f"""
 <div class="actions"><a class="btn solid" href="ask.html">Ask a question</a> <a class="btn" href="plan.html">Plan a query</a> <a class="btn" href="{REPO}">GitHub</a></div>
 <h2 id="how-it-works">How it works</h2>
-<p>Hermes follows NL2KQL (Tang et al., <a href="https://arxiv.org/abs/2404.02933">arXiv 2404.02933</a>), which translates questions into Kusto queries over a database schema, with the ontology as the schema and the knowledge graph as the data, and adds a query planner and budgets:</p>
+<p>The ontology is the schema and the knowledge graph is the data. A question goes through seven stages:</p>
 {PIPELINE}
 <p>One model call writes the query; everything after it is checked before it costs anything, and the model is asked again only when a check fails and the budget allows. See <a href="pipeline.html">Pipeline</a>.</p>
 <h2 id="quick-start">Quick start</h2>
@@ -181,9 +181,9 @@ print(answer.sparql, answer.rows, answer.spend.total)</code></pre>
         f"""
 {PIPELINE}
 <h2 id="catalog">The ontology catalog</h2>
-<p>NL2KQL's semantic data catalog, for a knowledge graph. From the ontology: classes and properties with labels, comments, declared domains and ranges. From the data: how often each term is used, which properties the instances of each class use, which classes a property's objects belong to, whether a property holds literals or entities, the values of properties with few distinct values (currencies, countries), and the members of classes with at most 100 instances (departments, product categories). Built once per graph; 0.1 s for the corporate graph. Source: <a href="{SRC}/pipeline/catalog.py">catalog.py</a>.</p>
+<p>Everything the model may need to know about the graph. From the ontology: classes and properties with labels, comments, declared domains and ranges. From the data: how often each term is used, which properties the instances of each class use, which classes a property's objects belong to, whether a property holds literals or entities, the values of properties with few distinct values (currencies, countries), and the members of classes with at most 100 instances (departments, product categories). Built once per graph; 0.1 s for the corporate graph. Source: <a href="{SRC}/pipeline/catalog.py">catalog.py</a>.</p>
 <h2 id="refiner">The ontology refiner</h2>
-<p>NL2KQL keeps the tables most similar to the question with all their columns; Hermes keeps the classes, properties and values that rank highest for the question, adds the properties the chosen classes' instances use and the classes at both ends of the chosen properties, and links the entities the question names: exact labels, members of small classes the question names, and capitalized mentions ("Ms. Brant" finds "Karen Brant"). Ranking is pluggable: BM25 by default, or embeddings from any OpenAI-compatible or Ollama endpoint (<a href="{SRC}/retrieval.py">retrieval.py</a>).</p>
+<p>Hermes keeps the classes, properties and values that rank highest for the question, adds the properties the chosen classes' instances use and the classes at both ends of the chosen properties, and links the entities the question names: exact labels, members of small classes the question names, and capitalized mentions ("Ms. Brant" finds "Karen Brant"). Ranking is pluggable: BM25 by default, or embeddings from any OpenAI-compatible or Ollama endpoint (<a href="{SRC}/retrieval.py">retrieval.py</a>).</p>
 <pre><code>Properties (subject → object):
 - pv:memberOf "member of": Agent, Employee, Manager → Department
 Values that occur in the graph:
@@ -198,7 +198,7 @@ Entities named in the question:
 <p>Cheapest first, each change recorded (<a href="{SRC}/pipeline/repair.py">repair.py</a>):</p>
 <ol>
 <li>declare prefixes the query uses but forgot; move ORDER BY and LIMIT out of WHERE;</li>
-<li>replace an unknown property or class by the closest known name (NL2KQL uses embeddings with a 0.9 threshold);</li>
+<li>replace an unknown property or class by the closest known name;</li>
 <li>replace an entity IRI the graph does not mention by the entity whose label matches it;</li>
 <li>check types: a class used as a property, a literal where a property holds entities, an entity where it holds literals;</li>
 <li>probe: one ASK query per pattern about a named entity, so <code>empl-Heinrich.Hoch a pv:Manager</code> is caught before the query runs empty;</li>

@@ -44,9 +44,9 @@
 <li><b>Execute</b><span>the plan runs on the graph</span></li>
 </ol>
 <h2 id="catalog">The ontology catalog</h2>
-<p>NL2KQL's semantic data catalog, for a knowledge graph. From the ontology: classes and properties with labels, comments, declared domains and ranges. From the data: how often each term is used, which properties the instances of each class use, which classes a property's objects belong to, whether a property holds literals or entities, the values of properties with few distinct values (currencies, countries), and the members of classes with at most 100 instances (departments, product categories). Built once per graph; 0.1 s for the corporate graph. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/catalog.py">catalog.py</a>.</p>
+<p>Everything the model may need to know about the graph. From the ontology: classes and properties with labels, comments, declared domains and ranges. From the data: how often each term is used, which properties the instances of each class use, which classes a property's objects belong to, whether a property holds literals or entities, the values of properties with few distinct values (currencies, countries), and the members of classes with at most 100 instances (departments, product categories). Built once per graph; 0.1 s for the corporate graph. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/catalog.py">catalog.py</a>.</p>
 <h2 id="refiner">The ontology refiner</h2>
-<p>NL2KQL keeps the tables most similar to the question with all their columns; Hermes keeps the classes, properties and values that rank highest for the question, adds the properties the chosen classes' instances use and the classes at both ends of the chosen properties, and links the entities the question names: exact labels, members of small classes the question names, and capitalized mentions ("Ms. Brant" finds "Karen Brant"). Ranking is pluggable: BM25 by default, or embeddings from any OpenAI-compatible or Ollama endpoint (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/retrieval.py">retrieval.py</a>).</p>
+<p>Hermes keeps the classes, properties and values that rank highest for the question, adds the properties the chosen classes' instances use and the classes at both ends of the chosen properties, and links the entities the question names: exact labels, members of small classes the question names, and capitalized mentions ("Ms. Brant" finds "Karen Brant"). Ranking is pluggable: BM25 by default, or embeddings from any OpenAI-compatible or Ollama endpoint (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/retrieval.py">retrieval.py</a>).</p>
 <pre><code>Properties (subject → object):
 - pv:memberOf "member of": Agent, Employee, Manager → Department
 Values that occur in the graph:
@@ -61,7 +61,7 @@ Entities named in the question:
 <p>Cheapest first, each change recorded (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/repair.py">repair.py</a>):</p>
 <ol>
 <li>declare prefixes the query uses but forgot; move ORDER BY and LIMIT out of WHERE;</li>
-<li>replace an unknown property or class by the closest known name (NL2KQL uses embeddings with a 0.9 threshold);</li>
+<li>replace an unknown property or class by the closest known name;</li>
 <li>replace an entity IRI the graph does not mention by the entity whose label matches it;</li>
 <li>check types: a class used as a property, a literal where a property holds entities, an entity where it holds literals;</li>
 <li>probe: one ASK query per pattern about a named entity, so <code>empl-Heinrich.Hoch a pv:Manager</code> is caught before the query runs empty;</li>
