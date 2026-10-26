@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<title>Pipeline — Hermes Manual</title>
+<meta name="description" content="The stages of Hermes: ontology catalog and refiner, synthetic few-shot examples, prompt, generation, query refiner.">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site" aria-label="Site">
+    <a href="ask.html">Ask</a>
+    <a href="plan.html">Plan</a>
+    <a href="pipeline.html">Pipeline</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav" aria-label="Manual pages">
+<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="ask.html">Try: ask a question</a><a href="plan.html">Try: plan a query</a><a href="pipeline.html" aria-current="page">Pipeline</a><a href="planner.html">Planner</a><a href="pricing.html">Pricing and budgets</a><a href="graphs.html">Graphs</a><a href="evaluation.html">Evaluation</a><a href="baselines.html">Baselines</a><a href="reference.html">Python and CLI</a>
+</nav>
+<main id="content">
+<p class="kicker">hermes.pipeline</p>
+<h1>Pipeline</h1>
+<p class="lede">A question goes through seven stages; each reports to observers as it starts and ends, and each prices what it is about to spend.</p>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#catalog">The ontology catalog</a></li><li><a href="#refiner">The ontology refiner</a></li><li><a href="#examples">Few-shot examples</a></li><li><a href="#generate">Generate</a></li><li><a href="#repair">The query refiner</a></li><li><a href="#observers">Observers</a></li></ol></nav>
+
+<ol class="stages">
+<li><b>Refine</b><span>the ontology slice the question needs</span></li>
+<li><b>Examples</b><span>synthetic pairs from the graph</span></li>
+<li><b>Generate</b><span>one model call writes SPARQL</span></li>
+<li><b>Repair</b><span>prefixes, terms, types, probes</span></li>
+<li><b>Plan</b><span>relational algebra, rewritten</span></li>
+<li><b>Price</b><span>checked against the budget</span></li>
+<li><b>Execute</b><span>the plan runs on the graph</span></li>
+</ol>
+<h2 id="catalog">The ontology catalog</h2>
+<p>NL2KQL's semantic data catalog, for a knowledge graph. From the ontology: classes and properties with labels, comments, declared domains and ranges. From the data: how often each term is used, which properties the instances of each class use, which classes a property's objects belong to, whether a property holds literals or entities, the values of properties with few distinct values (currencies, countries), and the members of classes with at most 100 instances (departments, product categories). Built once per graph; 0.1 s for the corporate graph. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/catalog.py">catalog.py</a>.</p>
+<h2 id="refiner">The ontology refiner</h2>
+<p>NL2KQL keeps the tables most similar to the question with all their columns; Hermes keeps the classes, properties and values that rank highest for the question, adds the properties the chosen classes' instances use and the classes at both ends of the chosen properties, and links the entities the question names: exact labels, members of small classes the question names, and capitalized mentions ("Ms. Brant" finds "Karen Brant"). Ranking is pluggable: BM25 by default, or embeddings from any OpenAI-compatible or Ollama endpoint (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/retrieval.py">retrieval.py</a>).</p>
+<pre><code>Properties (subject → object):
+- pv:memberOf "member of": Agent, Employee, Manager → Department
+Values that occur in the graph:
+- pv:addressCountry "France"
+Entities named in the question:
+- prodi:prod-cat-Compensator "Compensator" (Product Category)</code></pre>
+<h2 id="examples">Few-shot examples</h2>
+<p>Built from the graph, never from benchmark questions (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/synthetic.py">synthetic.py</a>): template queries over the catalog (an entity's attribute, a relation either way, instances with a listed value, a count, a superlative, two hops), filled with sampled entities and kept when they return 1 to 50 rows. The model writes the question each query answers from its terms' labels, and the pair is kept only if the pipeline, without examples, answers that question with the same answers (F1 ≥ 0.7). <code>hermes fewshot build --graph corporate</code> writes <code>data/fewshot/corporate.jsonl</code>; the two closest examples go in each prompt.</p>
+<h2 id="generate">Generate</h2>
+<p>One call. The prompt is built by a builder (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/prompt.py">prompt.py</a>) from instructions, prefixes, the ontology slice, the examples and the question.</p>
+<h2 id="repair">The query refiner</h2>
+<p>Cheapest first, each change recorded (<a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pipeline/repair.py">repair.py</a>):</p>
+<ol>
+<li>declare prefixes the query uses but forgot; move ORDER BY and LIMIT out of WHERE;</li>
+<li>replace an unknown property or class by the closest known name (NL2KQL uses embeddings with a 0.9 threshold);</li>
+<li>replace an entity IRI the graph does not mention by the entity whose label matches it;</li>
+<li>check types: a class used as a property, a literal where a property holds entities, an entity where it holds literals;</li>
+<li>probe: one ASK query per pattern about a named entity, so <code>empl-Heinrich.Hoch a pv:Manager</code> is caught before the query runs empty;</li>
+<li>send what is still wrong back to the model, at most twice, while the budget allows. An answer with no rows is sent back once more.</li>
+</ol>
+<h2 id="observers">Observers</h2>
+<pre><code>from hermes.pipeline.events import Recorder, Printer
+answer = Hermes(kg, observers=[Printer()]).ask(question)   # one line per stage</code></pre>
+
+<nav class="pager" aria-label="Pages"><a class="prev" href="plan.html"><span>Previous</span>Try: plan a query</a><a class="next" href="planner.html"><span>Next</span>Planner</a></nav>
+</main>
+</div>
+<footer class="site">Hermes Manual. <a href="https://github.com/lamng3/hermes">Code</a> · <a href="https://github.com/lamng3/hermes/tree/master/results">Results</a>.</footer>
+<script src="search.js"></script>
+</body>
+</html>

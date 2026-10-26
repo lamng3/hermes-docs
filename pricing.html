@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<title>Pricing and budgets — Hermes Manual</title>
+<meta name="description" content="How Hermes prices model calls and graph queries before it spends them, and how a budget caps a run.">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site">
+  <a class="logo" href="index.html"><span class="logo-mark">H</span><span>Hermes</span></a>
+  <nav class="site" aria-label="Site">
+    <a href="ask.html">Ask</a>
+    <a href="plan.html">Plan</a>
+    <a href="pipeline.html">Pipeline</a>
+    <label class="nav-button" for="nav-toggle">Menu</label>
+    <a href="https://github.com/lamng3/hermes" class="pill">GitHub ↗</a>
+  </nav>
+</header>
+<input id="nav-toggle" class="nav-toggle" type="checkbox">
+<div class="layout">
+<nav class="nav" aria-label="Manual pages">
+<a class="brand-desk" href="index.html">Hermes Manual</a><input class="search" id="q" type="search" placeholder="Search the manual" autocomplete="off"><ul id="results" hidden></ul><a href="index.html">Overview</a><a href="ask.html">Try: ask a question</a><a href="plan.html">Try: plan a query</a><a href="pipeline.html">Pipeline</a><a href="planner.html">Planner</a><a href="pricing.html" aria-current="page">Pricing and budgets</a><a href="graphs.html">Graphs</a><a href="evaluation.html">Evaluation</a><a href="baselines.html">Baselines</a><a href="reference.html">Python and CLI</a>
+</nav>
+<main id="content">
+<p class="kicker">hermes.pricing</p>
+<h1>Pricing and budgets</h1>
+<p class="lede">Every model call and every plan is priced before it runs; a budget caps calls, tokens, dollars, graph queries and rows, and a run reports what each stage was expected to cost and what it cost.</p>
+<nav class="toc" aria-label="On this page"><strong>On this page</strong><ol><li><a href="#prices">Prices</a></li><li><a href="#budgets">Budgets</a></li><li><a href="#graph-pricing">Pricing graph queries</a></li></ol></nav>
+
+<h2 id="prices">Prices</h2>
+<p>A <code>Price</code> counts model calls, input and output tokens, dollars when the model has a list price, graph queries and rows fetched. A model call is priced from its prompt (four characters a token) with 400 output tokens; a plan from the planner's estimates of the queries and rows its executor will fetch. Source: <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pricing/budget.py">budget.py</a>, list prices in <a href="https://github.com/lamng3/hermes/blob/master/src/hermes/pricing/prices.py">prices.py</a>.</p>
+<h2 id="budgets">Budgets</h2>
+<pre><code>from hermes import Budget, Hermes
+answer = Hermes(kg, budget=Budget(llm_calls=3, tokens=20_000, rows=50_000)).ask(question)
+answer.spend.to_dict()     # per stage: estimated and actual
+answer.error               # "over budget at execute: rows would reach 61,204, over the cap of 50,000"</code></pre>
+<p>A step that would break the budget is not taken: a repair the budget cannot afford is skipped and the problems are reported; a plan over the row cap is not run. <code>BudgetedLLM</code> decorates any model client with the same check.</p>
+<h2 id="graph-pricing">Pricing graph queries</h2>
+<p>The graph side of a price comes from the planner (see <a href="planner.html#estimates">estimates</a>): a plan's rows fetched are estimated scan by scan, with bind joins priced as index accesses, before anything is sent. On the corporate graph the median q-error of the result's row estimate is 1.10; on DBpedia, where statistics come from the endpoint one predicate at a time, 1.41.</p>
+
+<nav class="pager" aria-label="Pages"><a class="prev" href="planner.html"><span>Previous</span>Planner</a><a class="next" href="graphs.html"><span>Next</span>Graphs</a></nav>
+</main>
+</div>
+<footer class="site">Hermes Manual. <a href="https://github.com/lamng3/hermes">Code</a> · <a href="https://github.com/lamng3/hermes/tree/master/results">Results</a>.</footer>
+<script src="search.js"></script>
+</body>
+</html>
