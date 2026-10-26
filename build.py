@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parent
 NAV = [
     ("index.html", "Overview"),
     ("playground.html", "Playground"),
+    ("steps.html", "Step through"),
     ("algebra.html", "Algebra"),
     ("verifier.html", "Verifier"),
     ("systems.html", "Systems"),
@@ -240,6 +241,33 @@ pytest</code></pre>
 <li>The typed algebra and the verifier are not run in the browser. The replay shows the planner's feedback (solutions and their change), not its type checks; see <a href="verifier.html">Verifier</a>.</li>
 <li>Answers are not scored here. The scores shown for recorded queries come from the benchmark's official scorer, as in the <a href="leaderboard.html">leaderboard</a>.</li>
 </ul>
+""",
+    )
+    page(
+        "steps.html",
+        "Step through",
+        "Compile a question into SPARQL with Hermes's budgeted planner, one phase at a time: parse, repair, bind, check, price, run, answer. Hermes itself runs in your browser.",
+        "Try it",
+        "Load a knowledge graph and its ontology, ask a question, and watch Hermes compile it into SPARQL: the model parses it once, and every later phase is symbolic and shown as it happens.",
+        """
+<aside class="callout"><span class="label">What runs where</span><p>Everything runs in your browser, and it is the real code. Hermes's Python package (the same wheel the benchmarks run) is installed under <strong>Pyodide</strong>, and its queries run on <strong>Oxigraph</strong> compiled to WebAssembly, the engine Hermes uses for local graphs. Only the model is not here: the sample questions replay the replies Llama 3.1 8B gave in the committed CK26 run, and for any other question you use a model you run (Ollama, a small in-browser model, or an endpoint) or paste its replies. For each sample, the page checks that it reaches the same query as the native Python run.</p></aside>
+<div id="hsteps" aria-label="Hermes step through">Loading…</div>
+<script src="pg.js"></script>
+<script src="steps.js"></script>
+<h2 id="the-phases">The phases</h2>
+<ol>
+<li><strong>Parse.</strong> One model call reads the question into a goal (what to return, of which type, one or many) and a plan of SPARQL algebra operators. Words it cannot name in the graph's terms stay in [brackets].</li>
+<li><strong>Repair.</strong> What small models commonly get wrong is fixed before binding: an IRI the graph does not contain becomes a phrase again, and a value written as a quoted string is bound both as the literal and as the entities it may name.</li>
+<li><strong>Bind.</strong> Each phrase gets ranked candidates by its position: a property (or its inverse) in predicate position, a class after <code>a</code> or in the goal, an entity or value elsewhere. Candidates come from the ontology's labels and local names and from the terms the data uses.</li>
+<li><strong>Check.</strong> The best joint assignments become candidate plans, and the <a href="verifier.html">verifier</a> types each against the ontology before anything runs. Where the ontology declares no range, the kind of values the data holds (literals or entities) stands in. A name written as a literal is also tried as the entity it names.</li>
+<li><strong>Price.</strong> Each well-typed plan gets System R estimates from the graph's statistics, rows and C_out, and a logistic estimate p of being right.</li>
+<li><strong>Run.</strong> The planner runs the plan with the best p net of its price. The result updates p; past the threshold it stops. Otherwise it runs the next one, and when a reading's share of the runs is spent, it asks the model again with what it saw.</li>
+<li><strong>Answer.</strong> The most probable plan, with p as its confidence. Below the abstain threshold, Hermes says so instead of claiming an answer.</li>
+</ol>
+<h2 id="your-own-graph">Your own graph</h2>
+<p>Choose <strong>Your own ontology and data</strong> and load Turtle, N-Triples, RDF/XML, N-Quads or TriG files. The ontology files are read for the vocabulary the model sees (classes, properties, labels, domains and ranges); data and ontology are queried together, as Hermes's benchmark graphs are. With no ontology, the vocabulary is read from the data. Nothing is uploaded: the files stay in the page.</p>
+<h2 id="what-to-expect">What to expect</h2>
+<p>With Llama 3.1 8B, the budgeted planner scores 0.089 set F1 on the held-out CK26 questions (0.081 for the step-by-step agent, with 7 times fewer model calls), and abstains on most questions: the samples include two where it does. See <a href="leaderboard.html">Leaderboard</a> and the <a href="https://github.com/lamng3/hermes/blob/master/paper/IDEAS.md">ideas</a> behind each phase.</p>
 """,
     )
     page(
