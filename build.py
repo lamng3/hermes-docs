@@ -29,7 +29,7 @@ REPO = "https://github.com/lamng3/hermes"
 SRC = REPO + "/blob/master/src/hermes"
 
 FOOTER = (
-    "Hermes Manual. Verified Query Planning over the SPARQL Algebra with Language Agents. "
+    "Hermes Manual. "
     f'<a href="{REPO}/blob/master/paper/hermes.pdf">Paper</a> · '
     f'<a href="{REPO}">Code</a>.'
 )
@@ -102,7 +102,7 @@ def home_page(title, description, lede, body):
 <html lang="en">
 <head>
 {HEAD}
-<title>Hermes — verified query planning over the SPARQL algebra</title>
+<title>Hermes</title>
 <meta name="description" content="{description}">
 </head>
 <body>
@@ -175,7 +175,7 @@ def main():
         "Hermes answers a question over a knowledge graph by planning a SPARQL query one algebra operator at a time. A verifier types every step against the RDF schema before it runs, and execution on the graph tells the planner what each step did.",
         f"""
 <nav class="toc"><strong>On this page</strong><ol><li><a href="#idea">The idea</a></li><li><a href="#pieces">The pieces</a></li><li><a href="#quick-start">Quick start</a></li><li><a href="#install">Install</a></li></ol></nav>
-<p>This site documents the code of the paper <a href="{REPO}/blob/master/paper/hermes.pdf"><em>Hermes: Verified Query Planning over the SPARQL Algebra with Language Agents</em></a> (Lam Nguyen, Case Western Reserve University). The repository is its official implementation.</p>
+<p>This site documents the code of <a href="{REPO}"><em>Hermes</em></a>, with its <a href="{REPO}/blob/master/paper/hermes.pdf">write-up</a> (Lam Nguyen, Case Western Reserve University).</p>
 <h2 id="idea">The idea</h2>
 <p>Language models usually write a whole SPARQL query, then repair it after it fails. A query optimizer works differently: it applies one algebraic operator at a time and estimates its effect before keeping it. Hermes takes the optimizer's view of query generation:</p>
 <ol>
