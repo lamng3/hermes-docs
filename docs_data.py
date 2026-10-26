@@ -12,6 +12,7 @@ Writes docs-data.json.
 """
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -20,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 HERMES = ROOT.parent / "hermes"
 sys.path.insert(0, str(HERMES / "src"))
+os.environ.setdefault("HERMES_DATA", str(HERMES / "data"))  # the benchmarks, for the gold queries
 
 from hermes import Budget, Hermes, KnowledgeGraph  # noqa: E402
 from hermes import llm as llms  # noqa: E402
